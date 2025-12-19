@@ -1,0 +1,254 @@
+.hidden-export-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 1920px;
+    z-index: -9999;
+    visibility: hidden;
+    pointer-events: none;
+}
+.export-card {
+    background-color: #0f0f0f;
+    background: radial-gradient(circle at top right, #3a0050, #0f0f0f 60%);
+    position: relative;
+    overflow: hidden;
+    font-family: "Inter", sans-serif;
+    color: #fff;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+.card-square {
+    width: 1080px;
+    height: 1080px;
+}
+.card-story {
+    width: 1080px;
+    height: 1920px;
+}
+.export-card .match-arena {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card-square .match-arena {
+    margin-top: 0;
+}
+.card-story .match-arena {
+    margin-top: 40px;
+}
+.export-card .p-group {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    top: 54%;
+    transform: translateY(-50%);
+    width: 350px;
+}
+.export-card .p-left {
+    left: 15px;
+}
+.export-card .p-right {
+    right: 15px;
+}
+.export-card .p-img {
+    width: 320px !important;
+    height: 320px !important;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 8px solid #bb86fc;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.6);
+    margin-bottom: 0;
+    background-color: #222;
+}
+.export-card .p-name {
+    font-size: 36px;
+    font-weight: 700;
+    margin-top: 25px;
+    text-shadow: 0 2px 10px rgb(0 0 0 / 0.8);
+    width: 120%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+.export-card .score-circle {
+    position: relative;
+    z-index: 10;
+    width: 320px;
+    height: 320px;
+    background: #0f0f0f;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 15px solid #fff;
+    box-shadow: 0 0 100px rgb(255 255 255 / 0.2);
+}
+.export-card .score-val {
+    font-size: 144px;
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+}
+.export-card .crown {
+    font-size: 96px;
+    position: absolute;
+    top: -80px;
+    filter: drop-shadow(0 0 15px gold);
+    display: none;
+}
+.export-card .match-title {
+    text-align: center;
+    font-size: 100px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-top: -20px;
+    position: relative;
+    z-index: 20;
+    color: #fff;
+    text-shadow: 0 0 40px rgb(255 255 255 / 0.4);
+    width: 100%;
+}
+.export-card .match-subtitle {
+    text-align: center;
+    font-size: 25px;
+    font-weight: 600;
+    color: #aaa;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    width: 90%;
+    line-height: 1.4;
+}
+.export-card .match-subtitle span {
+    color: #bb86fc;
+}
+.export-card .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    width: 90%;
+    margin: 50px auto 0;
+}
+.export-card .stat-card {
+    background: rgb(255 255 255 / 0.04);
+    border: 2px solid rgb(255 255 255 / 0.08);
+    border-radius: 40px;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.export-card .stat-user {
+    font-size: 40px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.export-card .stat-pill {
+    background: rgb(187 134 252 / 0.1);
+    border: 2px solid rgb(187 134 252 / 0.3);
+    color: #bb86fc;
+    font-size: 40px;
+    font-weight: 800;
+    padding: 15px 0;
+    width: 90%;
+    text-align: center;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.export-card .common-list-box {
+    width: 90%;
+    margin: 60px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: rgb(255 255 255 / 0.03);
+    border: 2px solid rgb(255 255 255 / 0.08);
+    border-radius: 40px;
+    padding: 40px;
+}
+.export-card .list-header {
+    text-align: center;
+    font-size: 35px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #ccc;
+    margin-bottom: 20px;
+    border-bottom: none;
+}
+.export-card .list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 40px;
+    background-color: rgb(255 255 255 / 0.05);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 25px;
+    font-size: 35px;
+    color: #fff;
+    box-sizing: border-box;
+}
+.export-card .list-row.top-1 {
+    background-color: rgb(187 134 252 / 0.15);
+    border: 2px solid rgb(187 134 252 / 0.4);
+    font-weight: 700;
+    font-size: 38px;
+}
+.export-card .list-row strong {
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.export-card .badge-shared {
+    font-size: 26px;
+    font-weight: 900;
+    color: #bb86fc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgb(187 134 252 / 0.1);
+    padding: 12px 30px;
+    border-radius: 100px;
+}
+.export-card .list-row.top-1 .badge-shared {
+    background: rgb(187 134 252 / 0.2);
+    color: #fff;
+    opacity: 1;
+}
+.export-card .card-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 50px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 500;
+    color: #8f8f8f;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}

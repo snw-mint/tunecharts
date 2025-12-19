@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="canonical" href="https://tunecharts.space/terms.html" />
+        <link rel="stylesheet" href="css/base.css" />
+        <link rel="stylesheet" href="css/policies.css" />
+        <link rel="stylesheet" href="css/feedback.css" />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ESP4KVJCPE"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", "G-ESP4KVJCPE");
+        </script>
+        <title>Terms of Service - TuneCharts</title>
+        <meta name="robots" content="noindex" />
+        <link rel="stylesheet" href="style.css" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    </head>
+    <body>
+        <header class="topo-fixo"><a href="index.html" class="btn-voltar">← Home</a></header>
+        <main>
+            <div class="policy-container">
+                <h1>Terms of Service</h1>
+                <span class="policy-meta">Last Updated: November 10, 2025</span>
+                <h2>1. Acceptance of Terms</h2>
+                <p>
+                    By accessing and using the website
+                    <a href="https://tunecharts.space">tunecharts.space</a> ("Service"), you accept and agree to be bound by the terms and provision of this agreement.
+                </p>
+                <h2>2. Description of Service</h2>
+                <p>TuneCharts is a free, fan-made tool that allows users to visualize their Last.fm listening history. We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with Last.fm Ltd., or any of its subsidiaries or affiliates.</p>
+                <h2>3. Disclaimer of Warranties</h2>
+                <p>The Service is provided on an "AS IS" and "AS AVAILABLE" basis. TuneCharts makes no representations or warranties of any kind, express or implied, regarding the operation of the Service or the information, content, or materials included. You expressly agree that your use of the Service is at your sole risk.</p>
+                <h2>4. Limitation of Liability</h2>
+                <p>In no event shall TuneCharts, its creator, or its affiliates be liable for any direct, indirect, incidental, special, consequential, or exemplary damages arising from the use or inability to use the Service.</p>
+                <h2>5. API Usage and Availability</h2>
+                <p>Our Service relies on the continued availability of the Last.fm API. We do not guarantee uptime. TuneCharts may experience downtime, errors, or may cease to function if Last.fm changes, restricts, or discontinues their API.</p>
+                <h2>6. Intellectual Property</h2>
+                <p>The generated charts and images may contain data (artist names, track titles) owned by third parties. TuneCharts claims no ownership over this raw data. The design and code of TuneCharts are owned by its creator.</p>
+                <h2>7. Changes to Terms</h2>
+                <p>We reserve the right to modify these terms at any time. You should check this page periodically. Your continued use of the Service after any such change constitutes your acceptance of the new Terms of Service.</p>
+                <h2>8. Contact</h2>
+                <p>
+                    For any questions regarding these Terms, please contact us at
+                    <a href="mailto:contact@tunecharts.space">contact@tunecharts.space</a>.
+                </p>
+            </div>
+        </main>
+        <footer>
+            <div id="feedbackModal" class="feedback-overlay">
+                <div class="feedback-box">
+                    <span class="feedback-close" onclick="closeFeedback()">&times;</span>
+                    <div id="formContainer">
+                        <h2 style="margin-bottom: 10px; color: #fff; text-align: center">Send Feedback</h2>
+                        <p style="color: #aaa; font-size: 0.9em; margin-bottom: 25px; text-align: center; line-height: 1.5">
+                            Found a bug? Have a suggestion? Let us know!<br />Your feedback helps us improve.
+                        </p>
+                        <form id="feedbackForm" action="https://formspree.io/f/mkgdqwww" method="POST" style="display: flex; flex-direction: column; gap: 15px">
+                            <input type="hidden" name="tool_source" value="TuneCharts" />
+                            <div class="rating-wrapper" style="text-align: center; margin-bottom: 5px">
+                                <span style="display: block; font-size: 0.9em; color: #ccc; margin-bottom: 8px">How satisfied are you?</span>
+                                <div class="star-rating" style="display: inline-block; direction: rtl; border: none">
+                                    <input type="radio" id="star5" name="rating" value="5" hidden /><label for="star5" title="Excellent">★</label>
+                                    <input type="radio" id="star4" name="rating" value="4" hidden /><label for="star4" title="Great">★</label>
+                                    <input type="radio" id="star3" name="rating" value="3" hidden /><label for="star3" title="Good">★</label>
+                                    <input type="radio" id="star2" name="rating" value="2" hidden /><label for="star2" title="Poor">★</label>
+                                    <input type="radio" id="star1" name="rating" value="1" hidden /><label for="star1" title="Very Poor">★</label>
+                                </div>
+                            </div>
+                            <textarea name="message" placeholder="Type your message here..." required style="width: 100%; height: 120px; padding: 15px; border-radius: 12px; border: 1px solid #333; background: rgba(255, 255, 255, 0.05); color: #fff; font-family: 'Poppins', sans-serif; font-size: 0.95rem; resize: none; outline: none;"></textarea>
+                            <input type="text" name="contact" placeholder="Last.fm user or Email (Optional)" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333; background: rgba(255, 255, 255, 0.05); color: #fff; font-family: 'Poppins', sans-serif; font-size: 0.95rem; outline: none;" />
+                            <button type="submit" id="btnSendFeedback" style="background-color: #bb86fc; color: #000; font-weight: 700; border: none; padding: 15px; border-radius: 50px; cursor: pointer; transition: all 0.2s; font-size: 1rem; margin-top: 10px;">
+                                Send Feedback
+                            </button>
+                        </form>
+                    </div>
+                    <div id="successContainer" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px 0">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(187, 134, 252, 0.1); color: #bb86fc; display: flex; align-items: center; justify-content: center; margin-bottom: 20px">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width: 40px; height: 40px; stroke-width: 3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <h3 style="margin-bottom: 10px; font-size: 1.5rem; color: #fff">Thank You!</h3>
+                        <p style="color: #aaa">Your feedback has been sent successfully.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-info">
+                <span class="info-line-1">© <span id="currentYear"></span> TuneCharts.</span>
+                <span class="info-line-2">All rights reserved.</span><span class="separator">|</span>
+                <span class="info-line-3">Created with 💜 by <a href="https://github.com/snw-mint/" target="_blank">Snow Mint</a></span>
+            </div>
+            <div class="footer-links">
+                <a href="privacy.html">Privacy Policy</a><span class="dot">•</span><a href="terms.html">Terms of Use</a>
+                <span class="dot">•</span><a href="#" onclick="openFeedback(event)">Send Feedback</a>
+                <span class="dot">•</span>
+                <a href="https://github.com/snw-mint/tunecharts" target="_blank" aria-label="View Source on GitHub" title="View Source on GitHub" style="display: inline-flex; align-items: center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.2s">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                </a>
+                <span class="dot">•</span><a href="changelog.html" class="versao">v2.0.0</a>
+            </div>
+        </footer>
+        <script src="feedback.js"></script>
+        <script src="version.js"></script>
+    </body>
+</html>
