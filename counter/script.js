@@ -15,7 +15,7 @@ function irParaPerfil() {
             lastfm_user: usuario,
         });
     }
-    window.location.href = "resultado.html?user=" + usuario;
+    window.location.href = "result.html?user=" + usuario;
 }
 if (botaoIr) {
     botaoIr.addEventListener("click", irParaPerfil);

@@ -1,0 +1,189 @@
+/* Copied from css/resultado.css — renamed to result.css */
+.topo-com-banner {
+    position: relative;
+    width: 100%;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 30px;
+    margin-bottom: 0;
+    overflow: hidden;
+    animation: zoomInFade 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.banner-fundo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-color: #2a0040;
+    background-size: cover;
+    background-position: center center;
+    transition: background-image 0.5s ease-in-out;
+}
+.banner-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgb(15 15 15 / 0.3) 0%, rgb(15 15 15 / 0.95) 70%, #0f0f0f 100%);
+    z-index: 1;
+}
+.perfil-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px;
+}
+.foto-perfil {
+    width: 200px;
+    height: 200px;
+    margin-top: 70px;
+    border-radius: 50%;
+    border: 4px solid #bb86fc;
+    background-color: #222;
+    object-fit: cover;
+    box-shadow: 0 0 25px rgb(187 134 252 / 0.4);
+    margin-bottom: 20px;
+}
+#userName {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 20px;
+    min-height: 48px;
+    text-shadow: 0 4px 20px rgb(0 0 0 / 0.9);
+    line-height: 1.1;
+}
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+.scrobbles-info {
+    background-color: rgb(187 134 252 / 0.15);
+    color: #bb86fc;
+    border: 1px solid rgb(187 134 252 / 0.3);
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 5px 25px;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.2);
+}
+.header-titles {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.subtitulo-destaque {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #bb86fc;
+    margin: 0;
+    text-transform: uppercase;
+    text-shadow: 0 0 15px rgb(187 134 252 / 0.4);
+}
+.monthly-label {
+    color: #ccc;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+}
+.period-toggle {
+    pointer-events: auto;
+    display: flex;
+    background-color: rgb(58 0 80 / 0.6);
+    border-radius: 30px;
+    padding: 5px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgb(187 134 252 / 0.3);
+    margin-left: auto;
+    position: relative;
+    box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
+}
+.toggle-option {
+    background: none;
+    border: none;
+    color: #d1b3ff;
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    width: auto;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease-out;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+#btnGerarRelatorio {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px; 
+}
+.toggle-option:hover {
+    color: #fff;
+}
+.toggle-option.active {
+    color: #000;
+}
+.toggle-glider {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 80px;
+    height: calc(100% - 10px);
+    background-color: #bb86fc;
+    border-radius: 25px;
+    box-shadow: 0 0 15px rgb(187 134 252 / 0.5);
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.conteudo-charts {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 25px 80px;
+}
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    width: 100%;
+}
+.chart-card {
+    background-color: #181818;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.3);
+    overflow: hidden;
+    min-width: 0;
+    opacity: 0;
+    border: 1px solid rgb(255 255 255 / 0.05) !important;
+    animation: zoomInFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    display: flex;
+    flex-direction: column;
+}
+/* ... rest of the original file ... */

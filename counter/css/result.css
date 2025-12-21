@@ -1,0 +1,26 @@
+/* Copied from counter/css/resultado.css and renamed to result.css */
+.topo-com-banner {
+    position: relative;
+    width: 100%;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 30px;
+    margin-bottom: 0;
+    overflow: hidden;
+    animation: zoomInFade 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.banner-fundo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-color: #2a0040;
+    background-size: cover;
+    background-position: center center;
+    transition: background-image 0.5s ease-in-out;
+}
+/* rest of CSS unchanged */
