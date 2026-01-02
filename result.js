@@ -6,7 +6,7 @@ const iconLoading = `<svg class="spinner" width="20" height="20" viewBox="0 0 24
 
 if (!username) window.location.href = "index.html";
 
-let currentPeriod = "1month"; 
+let currentPeriod = "1month";  
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story";
 let chartsToInclude = ["artists", "tracks"];
@@ -134,7 +134,7 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     elements.sqScrobblesLabel.textContent = scrobblesLabel;
     if (elements.monthlyLabel) elements.monthlyLabel.textContent = labelText;
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
-
+    
     await processarDadosCalendario(fromTimestamp);
 
     if (isInitialLoad) {
@@ -248,7 +248,6 @@ function renderizarListaProcessada(elementId, items, type) {
     if (!container) return;
 
     let htmlMain = "";
-    // Top 10
     const topItems = items.slice(0, 10);
 
     topItems.forEach((item, i) => {
