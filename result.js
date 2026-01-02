@@ -6,7 +6,7 @@ const iconLoading = `<svg class="spinner" width="20" height="20" viewBox="0 0 24
 
 if (!username) window.location.href = "index.html";
 
-let currentPeriod = "1month"; // '7day' (Week) ou '1month' (Month)
+let currentPeriod = "1month"; 
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story";
 let chartsToInclude = ["artists", "tracks"];
@@ -83,12 +83,9 @@ function moveGlider(targetButton) {
     elements.glider.style.transform = `translateX(${offsetLeft}px)`;
 }
 
-// --- LÓGICA DE DATAS ---
-
 function getStartOfWeekTimestamp() {
     const d = new Date();
     const day = d.getDay(); 
-    // Ajusta para segunda-feira (Monday = 1). Se for Domingo (0), volta 6 dias.
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setDate(diff);
     d.setHours(0, 0, 0, 0);
@@ -106,14 +103,11 @@ function getMonthName(date) {
     return date.toLocaleString('en-US', { month: 'long' });
 }
 
-// --- ENGINE PRINCIPAL ---
-
 async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     resetarChartsParaSkeleton();
     globalTopArtistImage = "";
     atualizarBanner("");
 
-    // 1. Definição de Textos e Timestamps
     let reportSubtitle = "";
     let labelText = "";
     let scrobblesLabel = "";
@@ -123,7 +117,7 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
 
     if (currentPeriod === "7day") {
         fromTimestamp = getStartOfWeekTimestamp();
-        reportSubtitle = "My Week"; // ou `Week of ${new Date(fromTimestamp*1000).getDate()}`
+        reportSubtitle = "My Week";
         labelText = "Since Monday";
         scrobblesLabel = "Weekly Scrobbles";
     } else if (currentPeriod === "1month") {
@@ -134,7 +128,6 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
         scrobblesLabel = "Monthly Scrobbles";
     }
 
-    // Atualiza UI Textos
     elements.storySubtitle.textContent = reportSubtitle;
     elements.sqReportTitle.textContent = reportSubtitle;
     elements.storyScrobblesLabel.textContent = scrobblesLabel;
@@ -142,7 +135,6 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     if (elements.monthlyLabel) elements.monthlyLabel.textContent = labelText;
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
 
-    // 2. Busca e Processamento
     await processarDadosCalendario(fromTimestamp);
 
     if (isInitialLoad) {
@@ -153,21 +145,18 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
 
 async function processarDadosCalendario(fromTimestamp) {
     try {
-        // Busca tracks
+
         const tracks = await buscarHistoricoCompleto(fromTimestamp);
         
-        // Atualiza Contador Total
         const totalScrobbles = tracks.length;
         elements.userScrobbles.textContent = totalScrobbles.toLocaleString("pt-BR");
         if (elements.storyScrobblesValue) elements.storyScrobblesValue.textContent = totalScrobbles.toLocaleString("en-US");
         if (elements.sqScrobblesValue) elements.sqScrobblesValue.textContent = totalScrobbles.toLocaleString("en-US");
         
-        // Calcula Média Diária (Simples: Total / Dias passados desde o inicio do periodo)
         const daysPassed = Math.max(1, (Date.now()/1000 - fromTimestamp) / 86400);
         const dailyAvg = Math.round(totalScrobbles / daysPassed);
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = dailyAvg.toLocaleString("pt-BR");
 
-        // Agregação dos dados
         const artistMap = {};
         const trackMap = {};
         const albumMap = {};
@@ -177,16 +166,13 @@ async function processarDadosCalendario(fromTimestamp) {
             const trackName = t.name;
             const albumName = t.album ? t.album["#text"] : "";
 
-            // Count Artist
             if (!artistMap[artistName]) artistMap[artistName] = 0;
             artistMap[artistName]++;
 
-            // Count Track (Key composta para evitar conflitos de nomes iguais)
             const trackKey = `${trackName}_||_${artistName}`;
             if (!trackMap[trackKey]) trackMap[trackKey] = { count: 0, name: trackName, artist: artistName };
             trackMap[trackKey].count++;
 
-            // Count Album
             if (albumName) {
                 const albumKey = `${albumName}_||_${artistName}`;
                 if (!albumMap[albumKey]) albumMap[albumKey] = { count: 0, name: albumName, artist: artistName };
@@ -194,7 +180,6 @@ async function processarDadosCalendario(fromTimestamp) {
             }
         });
 
-        // Converte para Arrays e Ordena
         const sortedArtists = Object.entries(artistMap)
             .map(([name, count]) => ({ name: name, playcount: count }))
             .sort((a, b) => b.playcount - a.playcount);
@@ -207,12 +192,10 @@ async function processarDadosCalendario(fromTimestamp) {
             .map(obj => ({ name: obj.name, artist: { name: obj.artist }, playcount: obj.count }))
             .sort((a, b) => b.playcount - a.playcount);
 
-        // Salva em cache
         cachedData.artists = sortedArtists;
         cachedData.tracks = sortedTracks;
         cachedData.albums = sortedAlbums;
 
-        // Renderiza
         renderizarListaProcessada("cardArtists", sortedArtists, "artist");
         renderizarListaProcessada("cardTracks", sortedTracks, "track");
         renderizarListaProcessada("cardAlbums", sortedAlbums, "album");
@@ -231,7 +214,7 @@ async function buscarHistoricoCompleto(fromTimestamp) {
     let allTracks = [];
     let page = 1;
     let totalPages = 1;
-    const limit = 200; // Limite alto para reduzir requisições
+    const limit = 200; 
 
     try {
         do {
@@ -245,11 +228,7 @@ async function buscarHistoricoCompleto(fromTimestamp) {
                 ? data.recenttracks.track 
                 : [data.recenttracks.track];
 
-            // Filtra "Now Playing" se necessário (embora 'from' deva cuidar da maioria, now playing vem sem date ou date=UTS futuro)
-            // Vamos incluir tudo que voltou, exceto o now playing atual se não tiver data, para não bugar contagem se quiser
-            // Mas geralmente conta-se now playing como scrobble do dia.
-            
-            allTracks = allTracks.concat(tracks.filter(t => t.date)); // Pega só o que já foi scrobblado (tem data)
+            allTracks = allTracks.concat(tracks.filter(t => t.date)); 
 
             if (data.recenttracks["@attr"]) {
                 totalPages = parseInt(data.recenttracks["@attr"].totalPages);
@@ -275,9 +254,9 @@ function renderizarListaProcessada(elementId, items, type) {
     topItems.forEach((item, i) => {
         const isTop1 = i === 0;
         let text = item.name;
-        let artistName = item.artist ? item.artist.name : ""; // Tracks/Albums têm obj artist, Artists não (name é o artist)
+        let artistName = item.artist ? item.artist.name : ""; 
         
-        // Se o tipo for artist, item.name é o artista. Se for track/album, item.artist.name é o artista.
+
         const artistForSearch = type === "artist" ? item.name : artistName;
         const trackForSearch = type === "artist" ? "" : item.name;
 
@@ -285,12 +264,12 @@ function renderizarListaProcessada(elementId, items, type) {
 
         if (isTop1) {
             let subtitle = type !== "artist" ? `<span style="display:block; font-size: 0.85em; opacity: 0.7; font-weight: normal;">${artistName}</span>` : "";
-            // Adiciona contagem de scrobbles
+
             let countLabel = `<span style="display:block; font-size: 0.75em; opacity: 0.6; margin-top: 4px;">${item.playcount} plays</span>`;
 
             htmlMain += `<div class="chart-item top-1"><div id="${imgId}" class="cover-placeholder"></div><div class="text-content"><span class="rank-number">#1</span><div><span>${text}</span>${subtitle}${countLabel}</div></div></div>`;
             
-            // Busca imagem do Top 1
+
             buscarImagemSpotify(artistForSearch, trackForSearch, type).then(
                 (spotifyUrl) => {
                     if (spotifyUrl) {
@@ -314,9 +293,14 @@ function renderizarListaProcessada(elementId, items, type) {
             );
         } else {
             let extra = type !== "artist" ? ` <span style="opacity:0.6"> - ${artistName}</span>` : "";
-            htmlMain += `<div class="chart-item">
-                            <div style="flex:1;">#${i + 1} - ${text}${extra}</div>
-                            <div style="font-size:0.8em; opacity:0.5;">${item.playcount}</div>
+
+            htmlMain += `<div class="chart-item" style="display: flex; justify-content: space-between; gap: 10px;">
+                            <div style="flex:1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                #${i + 1} - ${text}${extra}
+                            </div>
+                            <div style="font-size:0.8em; opacity:0.5; flex-shrink: 0;">
+                                ${item.playcount}
+                            </div>
                          </div>`;
         }
     });
@@ -330,7 +314,7 @@ function resetarChartsParaSkeleton() {
     document.querySelectorAll(".lista-top").forEach((el) => {
         el.innerHTML = skeletonTop1 + skeletonItem.repeat(9);
     });
-    // Resetar contadores visuais
+
     if (elements.userScrobbles) elements.userScrobbles.textContent = "----";
     if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = "--";
 }
@@ -553,14 +537,17 @@ function formatarListaHTML(items, limit, type, format) {
         
         if (format === "story") {
             const scrobbles = item.playcount ? parseInt(item.playcount).toLocaleString("en-US") : "";
-            
-            html += `<div class="story-item ${i === 0 ? "top-1" : ""}">
-                        <span class="story-rank">#${i + 1}</span>
-                        <span class="story-text" style="flex:1;">${text}</span>
-                        <span style="font-size:0.9em; opacity:0.9; margin-left:8px; white-space:nowrap;">${scrobbles} scrobbles</span>
+  
+            html += `<div class="story-item ${i === 0 ? "top-1" : ""}" style="display: flex; align-items: center;">
+                        <span class="story-rank" style="flex-shrink: 0;">#${i + 1}</span>
+                        <span class="story-text" style="flex:1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px;">${text}</span>
+                        <span style="font-size:0.9em; opacity:0.9; white-space:nowrap; flex-shrink: 0;">${scrobbles} scrobbles</span>
                      </div>`;
         } else {
-            html += `<li class="${i === 0 ? "top-1" : ""}"><span class="sq-v2-rank">#${i + 1}</span><span class="sq-v2-text">${text}</span></li>`;
+            html += `<li class="${i === 0 ? "top-1" : ""}" style="display: flex; align-items: center;">
+                        <span class="sq-v2-rank" style="flex-shrink: 0;">#${i + 1}</span>
+                        <span class="sq-v2-text" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${text}</span>
+                     </li>`;
         }
     });
     return html || "No data.";

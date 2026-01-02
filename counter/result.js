@@ -2,7 +2,7 @@ const params = new URLSearchParams(window.location.search);
 const username = params.get("user");
 if (!username) window.location.href = "index.html";
 
-let currentPeriod = "1month"; // '7day' (Week) ou '1month' (Month)
+let currentPeriod = "1month"; 
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story";
 let chartsToInclude = ["artists", "tracks"];
@@ -21,6 +21,7 @@ async function carregarTudo() {
         userScrobbles: document.getElementById("userScrobbles"),
         scrobblesPerDay: document.getElementById("scrobblesPerDay"),
         monthlyLabel: document.querySelector(".monthly-label"),
+        mainTitle: document.querySelector(".subtitulo-destaque"),
         glider: document.querySelector(".toggle-glider"),
         formatModal: document.getElementById("formatPickerModal"),
         colorModal: document.getElementById("colorPickerModal"),
@@ -52,6 +53,7 @@ async function carregarTudo() {
         sqCol2List: document.getElementById("sqCol2List"),
         sqScrobblesLabel: document.getElementById("sqScrobblesLabel"),
         sqScrobblesValue: document.getElementById("sqScrobblesValue"),
+        chartsGrid: document.querySelector(".charts-grid"),
     };
     configurarEventosHub();
     configurarTogglePeriodo();
@@ -81,12 +83,9 @@ function moveGlider(targetButton) {
     elements.glider.style.transform = `translateX(${offsetLeft}px)`;
 }
 
-// --- LÓGICA DE DATAS (Igual ao Root) ---
-
 function getStartOfWeekTimestamp() {
     const d = new Date();
     const day = d.getDay(); 
-    // Ajusta para segunda-feira (Monday = 1). Se for Domingo (0), volta 6 dias.
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setDate(diff);
     d.setHours(0, 0, 0, 0);
@@ -104,29 +103,37 @@ function getMonthName(date) {
     return date.toLocaleString('en-US', { month: 'long' });
 }
 
-// --- ENGINE PRINCIPAL (Counter) ---
-
 async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     resetarChartsParaSkeleton();
     globalTopArtistImage = "";
     atualizarBanner("");
 
+    if (elements.chartsGrid) elements.chartsGrid.style.display = "grid";
+    if (elements.genReportBtn) elements.genReportBtn.style.display = "flex";
+    if (elements.mainTitle) {
+        elements.mainTitle.textContent = "Your Top List";
+        elements.mainTitle.style.opacity = "1";
+    }
+
     let reportSubtitle = "";
     let labelText = "";
     let scrobblesLabel = "";
     let fromTimestamp = 0;
+    let periodNameForEmpty = "";
 
     const now = new Date();
 
     if (currentPeriod === "7day") {
         fromTimestamp = getStartOfWeekTimestamp();
         reportSubtitle = "My Week";
+        periodNameForEmpty = "this week";
         labelText = "Since Monday";
         scrobblesLabel = "Weekly Time";
     } else if (currentPeriod === "1month") {
         fromTimestamp = getStartOfMonthTimestamp();
         const monthName = getMonthName(now);
         reportSubtitle = `My ${monthName}`;
+        periodNameForEmpty = `in ${monthName}`;
         labelText = `In ${monthName}`;
         scrobblesLabel = "Monthly Time";
     }
@@ -138,8 +145,7 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     if (elements.monthlyLabel) elements.monthlyLabel.textContent = labelText;
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
 
-    // Chama a nova função de processamento de tempo
-    await processarDadosTempoCalendario(fromTimestamp);
+    await processarDadosTempoCalendario(fromTimestamp, periodNameForEmpty);
 
     if (isInitialLoad) {
         const activeButton = document.querySelector(".toggle-option.active");
@@ -147,51 +153,76 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     }
 }
 
-async function processarDadosTempoCalendario(fromTimestamp) {
+async function criarDicionarioDeDuracao(periodMatch) {
+    const map = {};
     try {
-        const tracks = await buscarHistoricoCompleto(fromTimestamp);
+        const apiPeriod = periodMatch === '7day' ? '7day' : '1month';
+        const url = `/api/?method=user.gettoptracks&user=${username}&limit=1000&period=${apiPeriod}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.toptracks && data.toptracks.track) {
+            const list = Array.isArray(data.toptracks.track) ? data.toptracks.track : [data.toptracks.track];
+            list.forEach(t => {
+                const d = parseInt(t.duration);
+                if (d > 0) {
+                    const key = `${t.name.toLowerCase()}_||_${t.artist.name.toLowerCase()}`;
+                    map[key] = d;
+                }
+            });
+        }
+    } catch (e) { console.warn("Erro duration dict", e); }
+    return map;
+}
+
+async function processarDadosTempoCalendario(fromTimestamp, periodName) {
+    try {
+        const durationPromise = criarDicionarioDeDuracao(currentPeriod);
+        const historyPromise = buscarHistoricoCompleto(fromTimestamp);
+
+        const [durationMap, tracks] = await Promise.all([durationPromise, historyPromise]);
+
+        if (tracks.length === 0) {
+            tratarEstadoVazio(periodName);
+            return;
+        }
         
         let totalSeconds = 0;
         const artistMap = {};
         const trackMap = {};
 
         tracks.forEach(t => {
-            // Nota: recenttracks nem sempre retorna duration. Se for 0, não soma tempo.
-            const duration = parseInt(t.duration || "0");
+            const artistName = t.artist ? t.artist["#text"] : "Unknown";
+            const trackName = t.name;
+            
+            let duration = parseInt(t.duration || "0");
+            if (duration === 0) {
+                const key = `${trackName.toLowerCase()}_||_${artistName.toLowerCase()}`;
+                duration = durationMap[key] || 0;
+            }
             
             if (duration > 0) {
-                const artistName = t.artist ? t.artist["#text"] : "Unknown";
-                const trackName = t.name;
-
                 totalSeconds += duration;
-
-                // Soma Artist
                 if (!artistMap[artistName]) artistMap[artistName] = 0;
                 artistMap[artistName] += duration;
-
-                // Soma Track (Key composta)
                 const trackKey = `${trackName}_||_${artistName}`;
                 if (!trackMap[trackKey]) trackMap[trackKey] = { seconds: 0, name: trackName, artist: artistName };
                 trackMap[trackKey].seconds += duration;
             }
         });
 
-        // Formata Total
         const totalMinutes = Math.floor(totalSeconds / 60);
         const formattedTotal = totalMinutes.toLocaleString("en-US") + " Minutes";
         
-        // Calcula Média Diária
         const daysPassed = Math.max(1, (Date.now()/1000 - fromTimestamp) / 86400);
         const dailyAvg = Math.round(totalMinutes / daysPassed);
         const formattedDaily = dailyAvg.toLocaleString("en-US") + " Mins/Day";
 
-        // Atualiza UI
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = formattedDaily;
         if (elements.userScrobbles) elements.userScrobbles.textContent = formattedTotal;
         if (elements.storyScrobblesValue) elements.storyScrobblesValue.textContent = formattedTotal;
         if (elements.sqScrobblesValue) elements.sqScrobblesValue.textContent = formattedTotal;
 
-        // Ordena
         const sortedArtists = Object.entries(artistMap)
             .map(([name, seconds]) => ({ name: name, seconds: seconds }))
             .sort((a, b) => b.seconds - a.seconds);
@@ -206,7 +237,6 @@ async function processarDadosTempoCalendario(fromTimestamp) {
         renderizarPreviewLista("cardArtists", sortedArtists, "artist");
         renderizarPreviewLista("cardTracks", sortedTracks, "track");
 
-        // Imagem Top 1 Artista
         if (sortedArtists.length > 0) {
             const topArtistName = sortedArtists[0].name;
             buscarImagemSpotify(topArtistName, "", "artist").then((url) => {
@@ -218,15 +248,14 @@ async function processarDadosTempoCalendario(fromTimestamp) {
                          top1ImgEl.innerHTML = "";
                          const img = new Image();
                          img.src = url;
-                         img.onload = () => {
-                             top1ImgEl.appendChild(img); 
-                             img.classList.add('loaded');
-                         };
+                         img.style.width = "100%";
+                         img.style.height = "100%";
+                         img.style.objectFit = "cover";
+                         img.onload = () => { top1ImgEl.appendChild(img); img.classList.add('loaded'); };
                     }
                 }
             });
         }
-        // Imagem Top 1 Track
         if (sortedTracks.length > 0) {
             const topTrack = sortedTracks[0];
             buscarImagemSpotify(topTrack.artist.name, topTrack.name, "track").then((url) => {
@@ -236,10 +265,10 @@ async function processarDadosTempoCalendario(fromTimestamp) {
                         top1TrackEl.innerHTML = "";
                         const img = new Image();
                         img.src = url;
-                        img.onload = () => {
-                             top1TrackEl.appendChild(img);
-                             img.classList.add('loaded');
-                        };
+                        img.style.width = "100%";
+                        img.style.height = "100%";
+                        img.style.objectFit = "cover";
+                        img.onload = () => { top1TrackEl.appendChild(img); img.classList.add('loaded'); };
                     }
                 }
             });
@@ -255,7 +284,25 @@ async function processarDadosTempoCalendario(fromTimestamp) {
     }
 }
 
-// Reutiliza a função de busca do Root (Paginação)
+function tratarEstadoVazio(periodName) {
+    if (elements.chartsGrid) elements.chartsGrid.style.display = "none";
+    if (elements.genReportBtn) elements.genReportBtn.style.display = "none";
+
+    if (elements.mainTitle) {
+        elements.mainTitle.textContent = "Oops, nothing here yet.";
+        elements.mainTitle.style.opacity = "0.7";
+    }
+    if (elements.monthlyLabel) {
+        elements.monthlyLabel.textContent = `You haven't listened to anything ${periodName} yet. Come back later!`;
+        elements.monthlyLabel.style.color = "#bb86fc";
+    }
+
+    if (elements.userScrobbles) { elements.userScrobbles.textContent = "0 Minutes"; elements.userScrobbles.classList.remove("skeleton"); }
+    if (elements.scrobblesPerDay) { elements.scrobblesPerDay.textContent = "0 Mins/Day"; elements.scrobblesPerDay.classList.remove("skeleton"); }
+    
+    atualizarBanner("");
+}
+
 async function buscarHistoricoCompleto(fromTimestamp) {
     let allTracks = [];
     let page = 1;
@@ -274,26 +321,21 @@ async function buscarHistoricoCompleto(fromTimestamp) {
                 ? data.recenttracks.track 
                 : [data.recenttracks.track];
             
-            // Filtra só o que tem data (ignora now playing se não tiver date)
             allTracks = allTracks.concat(tracks.filter(t => t.date)); 
 
             if (data.recenttracks["@attr"]) {
                 totalPages = parseInt(data.recenttracks["@attr"].totalPages);
             }
-            
             page++;
         } while (page <= totalPages);
-
-    } catch (e) {
-        console.error("Erro fetch historico", e);
-    }
+    } catch (e) { console.error("Erro fetch historico", e); }
     return allTracks;
 }
 
 function resetarChartsParaSkeleton() {
     const skeletonTop1 = `
         <div class="chart-item skeleton top-1">
-            <div class="cover-placeholder" style="background: #333;"></div>
+            <div class="cover-placeholder" style="background: #333; width: 50px; height: 50px; border-radius: 4px; flex-shrink: 0;"></div>
             <span class="skeleton-text" style="width: 60%;"></span>
         </div>`;
     const skeletonItem = `<div class="chart-item skeleton"></div>`;
@@ -313,9 +355,7 @@ async function obterTokenSpotify() {
             spotifyTokenCache = data.access_token;
             return data.access_token;
         }
-    } catch (e) {
-        console.warn("Falha token Spotify:", e);
-    }
+    } catch (e) { console.warn("Falha token Spotify:", e); }
     return null;
 }
 
@@ -342,9 +382,7 @@ async function buscarImagemSpotify(artist, trackName, type) {
         } else if (type === "track" && data.tracks?.items?.length > 0) {
             return data.tracks.items[0].album.images[0]?.url;
         }
-    } catch (e) {
-        return null;
-    }
+    } catch (e) { return null; }
     return null;
 }
 
@@ -391,26 +429,27 @@ function renderizarPreviewLista(elementId, dataList, type) {
         if (isTop1) {
             htmlMain += `
             <div class="chart-item top-1">
-                <div id="${imgId}" class="cover-placeholder"></div>
-                <div class="text-content">
+                <div id="${imgId}" class="cover-placeholder" style="width: 50px; height: 50px; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #333; margin-right: 12px;"></div>
+                <div class="text-content" style="min-width: 0; flex: 1;">
                     <span class="rank-number">#1</span>
-                    <div>
-                        <span>${text}${subtext}</span>
+                    <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <span style="white-space: nowrap;">${text}</span>${subtext}
                         <span style="display:block; font-size: 0.85em; opacity: 0.8; margin-top: 2px;">${timeStr}</span>
                     </div>
                 </div>
             </div>`;
         } else {
             htmlMain += `
-            <div class="chart-item">
-                <div style="flex:1;">#${i + 1} - ${text}${subtext}</div>
-                <div style="font-size:0.85em; opacity:0.8; margin-left:10px;">${timeStr}</div>
+            <div class="chart-item" style="display: flex; justify-content: space-between; gap: 10px;">
+                <div style="flex:1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    #${i + 1} - ${text}${subtext}
+                </div>
+                <div style="font-size:0.85em; opacity:0.8; flex-shrink: 0;">${timeStr}</div>
             </div>`;
         }
     });
     container.innerHTML = htmlMain || "No data.";
 }
-
 function formatTimeShort(totalSeconds) {
     const m = Math.floor(totalSeconds / 60);
     return `${m}m`;
@@ -535,7 +574,7 @@ async function gerarImagemFinal(format, accentColor, selectedCharts) {
         col1.style.display = "flex";
         col2.style.display = "none";
         if (format === "square") col1.style.width = "100%";
-        const limit = format === "story" ? 10 : 6;
+        const limit = format === "story" ? 10 : 5;
         col1Title.textContent = title;
         col1List.innerHTML = formatarListaHTML(data, limit, type, format);
     } else {
@@ -547,7 +586,7 @@ async function gerarImagemFinal(format, accentColor, selectedCharts) {
         col1.style.display = "flex";
         col2.style.display = "flex";
         if (format === "square") col1.style.width = "50%";
-        const limit = format === "story" ? 5 : 6;
+        const limit = format === "story" ? 5 : 5;
         col1Title.textContent = title1;
         col1List.innerHTML = formatarListaHTML(data1, limit, type1, format);
         col2Title.textContent = title2;
@@ -589,23 +628,21 @@ function formatarListaHTML(items, limit, type, format) {
     const itemsToShow = list.slice(0, limit);
     itemsToShow.forEach((item, i) => {
         let text = item.name;
-        const timeStr = formatTimeShort(item.seconds);
+        
         if (format === "story") {
+            const timeStr = formatTimeShort(item.seconds);
             html += `
-                <div class="story-item ${i === 0 ? "top-1" : ""}">
-                    <span class="story-rank">#${i + 1}</span>
-                    <span class="story-text" style="flex:1;">${text}</span>
-                    <span style="font-size:0.9em; opacity:0.9; margin-left:8px; white-space:nowrap;">${timeStr}</span>
+                <div class="story-item ${i === 0 ? "top-1" : ""}" style="display: flex; align-items: center;">
+                    <span class="story-rank" style="flex-shrink: 0;">#${i + 1}</span>
+                    <span class="story-text" style="flex:1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px;">${text}</span>
+                    <span style="font-size:0.9em; opacity:0.9; white-space:nowrap; flex-shrink: 0;">${timeStr}</span>
                 </div>
             `;
         } else {
             html += `
-                <li class="${i === 0 ? "top-1" : ""}">
-                    <span class="sq-v2-rank">#${i + 1}</span>
-                    <div style="display:flex; justify-content:space-between; width:100%;">
-                         <span class="sq-v2-text">${text}</span>
-                         <span style="font-size:0.8em; opacity:0.8;">${timeStr}</span>
-                    </div>
+                <li class="${i === 0 ? "top-1" : ""}" style="display: flex; align-items: center;">
+                    <span class="sq-v2-rank" style="flex-shrink: 0;">#${i + 1}</span>
+                    <span class="sq-v2-text" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${text}</span>
                 </li>
             `;
         }
