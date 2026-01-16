@@ -178,23 +178,18 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     }
 }
 
-async function processarDadosCalendario(fromTimestamp, toTimestamp) { // <--- CORREÇÃO 1: Adicionado toTimestamp aqui
+async function processarDadosCalendario(fromTimestamp, toTimestamp) { 
     try {
-        // CORREÇÃO 2: Passando toTimestamp para a função de busca
         const tracks = await buscarHistoricoCompleto(fromTimestamp, toTimestamp);
         
         const totalScrobbles = tracks.length;
         elements.userScrobbles.textContent = totalScrobbles.toLocaleString("pt-BR");
         if (elements.storyScrobblesValue) elements.storyScrobblesValue.textContent = totalScrobbles.toLocaleString("en-US");
         if (elements.sqScrobblesValue) elements.sqScrobblesValue.textContent = totalScrobbles.toLocaleString("en-US");
-        
-        // Cálculo da Média Diária (Agora toTimestamp existe neste escopo)
         let daysDivisor = 1;
         if (toTimestamp > 0) {
-             // Passado: divide pelo tamanho exato do periodo
              daysDivisor = (toTimestamp - fromTimestamp) / 86400;
         } else {
-             // Presente: divide pelo tempo decorrido até agora
              daysDivisor = (Date.now()/1000 - fromTimestamp) / 86400;
         }
         daysDivisor = Math.max(1, Math.round(daysDivisor));
@@ -272,8 +267,7 @@ async function buscarHistoricoCompleto(fromTimestamp, toTimestamp = 0) {
             const tracks = Array.isArray(data.recenttracks.track) 
                 ? data.recenttracks.track 
                 : [data.recenttracks.track];
-            
-            // Filtra 'Now Playing' (que não tem data) e junta
+        
             allTracks = allTracks.concat(tracks.filter(t => t.date));
 
             if (data.recenttracks["@attr"]) {
@@ -294,7 +288,6 @@ function renderizarListaProcessada(elementId, items, type) {
     if (!container) return;
 
     let htmlMain = "";
-    // Top 10
     const topItems = items.slice(0, 10);
 
     topItems.forEach((item, i) => {
@@ -361,8 +354,8 @@ function resetarChartsParaSkeleton() {
         el.innerHTML = skeletonTop1 + skeletonItem.repeat(9);
     });
 
-    if (elements.userScrobbles) elements.userScrobbles.textContent = "----";
-    if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = "--";
+    if (elements.userScrobbles) elements.userScrobbles.textContent = "loading";
+    if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = "loading";
 }
 
 async function buscarPerfil() {
@@ -649,6 +642,32 @@ function aplicarCoresDinamicas(card, accentColor, format) {
         card.style.background = `radial-gradient(circle at top right, ${accentColor}66, #0f0f0f 25%)`;
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const prevBtn = document.getElementById("prevPeriod");
+    const nextBtn = document.getElementById("nextPeriod");
+    const label = document.querySelector(".monthly-label");
+    function animateLabel(direction) {
+        if (!label) return;
+        label.classList.remove("animating-left", "animating-right");
+        void label.offsetWidth;
+        if (direction === "prev") {
+            label.classList.add("animating-left");
+        } else {
+            label.classList.add("animating-right");
+        }
+        setTimeout(() => {
+            label.classList.remove("animating-left", "animating-right");
+        }, 400);
+    }
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => animateLabel("prev"));
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => animateLabel("next"));
+    }
+});
+
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", carregarTudo);
 else carregarTudo();

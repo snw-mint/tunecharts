@@ -1,3 +1,19 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("periodToggle");
+    if (toggle) {
+        setTimeout(() => {
+            toggle.classList.add("show-tooltip");
+        }, 1000);
+        const removeTooltip = () => {
+            if (toggle.classList.contains("show-tooltip")) {
+                toggle.classList.remove("show-tooltip");
+                window.removeEventListener("scroll", removeTooltip);
+            }
+        };
+        window.addEventListener("scroll", removeTooltip, { passive: !0 });
+    }
+});
+
 function openFeedback(e) {
     if (e) e.preventDefault();
     const modal = document.getElementById("feedbackModal");

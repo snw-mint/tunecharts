@@ -2,7 +2,7 @@ const params = new URLSearchParams(window.location.search);
 const username = params.get("user");
 if (!username) window.location.href = "index.html";
 
-let currentPeriod = "1month"; // '7day' (Week) ou '1month' (Month)
+let currentPeriod = "1month";
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story";
 let chartsToInclude = ["artists", "tracks"];
@@ -10,7 +10,7 @@ let elements = {};
 let globalTopArtistImage = "";
 let spotifyTokenCache = null;
 let cachedData = { artists: [], tracks: [] };
-let periodOffset = 0; // Controle de Navegação (0 = Atual)
+let periodOffset = 0;
 
 async function carregarTudo() {
     elements = {
@@ -58,7 +58,7 @@ async function carregarTudo() {
     };
     configurarEventosHub();
     configurarTogglePeriodo();
-    configurarNavegacao(); // Ativa as setas
+    configurarNavegacao();
     await buscarPerfil();
     atualizarDadosDoPeriodo(true);
 }
@@ -106,8 +106,6 @@ function configurarNavegacao() {
     }
 }
 
-// --- LÓGICA DE DATAS ---
-
 function getStartOfWeekTimestamp() {
     const d = new Date();
     d.setDate(d.getDate() - (periodOffset * 7));
@@ -143,18 +141,12 @@ function getMonthName(date) {
     return date.toLocaleString('en-US', { month: 'long' });
 }
 
-// --- ENGINE PRINCIPAL (Counter Fix) ---
-
 async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     resetarChartsParaSkeleton();
     globalTopArtistImage = "";
     atualizarBanner("");
-
-    // Controle Visual das Setas
     const nextBtn = document.getElementById("nextPeriod");
     if (nextBtn) nextBtn.style.visibility = periodOffset === 0 ? "hidden" : "visible";
-
-    // Reseta visual do Empty State para o Normal
     if (elements.chartsGrid) elements.chartsGrid.style.display = "grid";
     if (elements.genReportBtn) elements.genReportBtn.style.display = "flex";
     if (elements.mainTitle) {
@@ -276,8 +268,6 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
 
         const totalMinutes = Math.floor(totalSeconds / 60);
         const formattedTotal = totalMinutes.toLocaleString("en-US") + " Minutes";
-        
-        // Média Diária Inteligente (Passado vs Presente)
         let daysDivisor = 1;
         if (toTimestamp > 0) {
              daysDivisor = (toTimestamp - fromTimestamp) / 86400;
@@ -414,8 +404,8 @@ function resetarChartsParaSkeleton() {
     document.querySelectorAll(".lista-top").forEach((el) => {
         el.innerHTML = skeletonTop1 + skeletonItem.repeat(9);
     });
-    if (elements.userScrobbles) elements.userScrobbles.innerHTML = "----";
-    if (elements.scrobblesPerDay) elements.scrobblesPerDay.innerHTML = "--";
+    if (elements.userScrobbles) elements.userScrobbles.innerHTML = "loading...";
+    if (elements.scrobblesPerDay) elements.scrobblesPerDay.innerHTML = "loading...";
 }
 
 async function obterTokenSpotify() {
@@ -763,6 +753,32 @@ function aplicarCoresDinamicas(card, accentColor, format) {
         card.style.background = `radial-gradient(circle at top right, ${accentColor}66, #0f0f0f 65%)`;
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const prevBtn = document.getElementById("prevPeriod");
+    const nextBtn = document.getElementById("nextPeriod");
+    const label = document.querySelector(".monthly-label");
+    function animateLabel(direction) {
+        if (!label) return;
+        label.classList.remove("animating-left", "animating-right");
+        void label.offsetWidth;
+        if (direction === "prev") {
+            label.classList.add("animating-left");
+        } else {
+            label.classList.add("animating-right");
+        }
+        setTimeout(() => {
+            label.classList.remove("animating-left", "animating-right");
+        }, 400);
+    }
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => animateLabel("prev"));
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => animateLabel("next"));
+    }
+});
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", carregarTudo);
 } else {
