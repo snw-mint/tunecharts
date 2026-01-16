@@ -1,7 +1,19 @@
-ErrorDocument 404 /404.html
-
 RewriteEngine On
-RewriteRule ^index\.html$ / [R=301,L]
-RewriteCond %{HTTPS} off [OR]
-RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+RewriteBase /
+
+# --- MAINTENANCE MODE START ---
+# 1. Allow access to the maintenance page itself
+RewriteCond %{REQUEST_URI} !^/maintenance\.html$ [NC]
+
+# 2. Allow access to assets (images, css, js, fonts) so the page looks good
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)$ [NC]
+
+# 3. Allow access to webmanifest (optional)
+RewriteCond %{REQUEST_URI} !^/site\.webmanifest$ [NC]
+
+# 4. Redirect everything else to maintenance.html (307 = Temporary Redirect)
+RewriteRule ^(.*)$ /maintenance.html [R=307,L]
+# --- MAINTENANCE MODE END ---
+
+# (Your existing code goes below here)
+ErrorDocument 404 /404.html

@@ -55,12 +55,15 @@
                 <div class="stats-row">
                     <div class="scrobbles-info"><span id="userScrobbles" class="skeleton">----</span></div>
                     <div class="scrobbles-info"><span id="scrobblesPerDay" class="skeleton">--</span></div>
-                    <button id="btnInfo" class="info-pill" aria-label="How is this calculated?">!</button>
                 </div>
                 <div class="header-titles">
-                    <h2 class="subtitulo-destaque">Your Top List</h2>
-                    <p class="monthly-label">Calculated by listening time</p>
+                <h2 class="subtitulo-destaque">Your Top List</h2>
+                <div class="period-navigation" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 5px;">
+                    <button id="prevPeriod" class="nav-arrow" title="Previous">❮</button>
+                    <p class="monthly-label" style="margin: 0; min-width: 150px;">In the last 30 days</p>
+                    <button id="nextPeriod" class="nav-arrow" title="Next" style="visibility: hidden;">❯</button>
                 </div>
+            </div>
             </div>
         </section>
         <main class="conteudo-charts">

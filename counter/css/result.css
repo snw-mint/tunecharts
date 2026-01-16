@@ -132,6 +132,35 @@
     z-index: 2;
     transition: color 0.3s ease-out;
 }
+.nav-arrow {
+    background: transparent;
+    border: none;
+    color: #bb86fc; /* Sua cor de destaque */
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: opacity 0.2s, transform 0.2s;
+    user-select: none;
+}
+
+.nav-arrow:hover {
+    opacity: 0.7;
+    transform: scale(1.1);
+}
+
+.nav-arrow:active {
+    transform: scale(0.9);
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+#btnGerarRelatorio {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px; 
+}
 .toggle-option:hover {
     color: #fff;
 }
@@ -180,6 +209,9 @@
 }
 #cardTracks {
     animation-delay: 0.4s;
+}
+#cardAlbums {
+    animation-delay: 0.6s;
 }
 .chart-card h2 {
     color: #bb86fc;
@@ -402,7 +434,7 @@ h1.skeleton {
 .toggle-switch-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: left;
     width: 100%;
     padding: 12px 0;
     border-bottom: 1px solid rgb(255 255 255 / 0.05);
@@ -494,6 +526,22 @@ input:checked + .slider::before {
 }
 .close-button:hover {
     color: #fff;
+}
+.close-button svg, 
+.feedback-close svg {
+    pointer-events: none; 
+}
+.close-button, 
+.feedback-close {
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+.close-button:hover, 
+.feedback-close:hover {
+    opacity: 0.7;
 }
 .color-palette {
     display: flex;
@@ -612,33 +660,6 @@ footer {
 .dot {
     opacity: 0.3;
 }
-.info-pill {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background-color: rgb(187 134 252 / 0.15);
-    border: 1px solid rgb(187 134 252 / 0.3);
-    color: #bb86fc;
-    font-weight: 900;
-    font-size: 1.1rem;
-    font-family: "Poppins", sans-serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 4px 15px rgb(0 0 0 / 0.2);
-}
-.info-pill:hover {
-    background-color: #bb86fc;
-    color: #000;
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgb(187 134 252 / 0.4);
-}
-.stats-row {
-    align-items: center;
-}
 @media (max-width: 768px) {
 html,
 body {
@@ -681,7 +702,7 @@ body {
     font-size: 0.85rem;
 }
 .topo-com-banner {
-    padding-top: 40px;
+    padding-top: 100px;
     min-height: auto;
 }
 .foto-perfil {
@@ -691,6 +712,47 @@ body {
 }
 #userName {
     font-size: 2.2rem;
+}
+#btnInfo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%; 
+    background-color: rgba(187, 134, 252, 0.1);
+    border: 1px solid rgba(187, 134, 252, 0.3);
+    color: #bb86fc;
+    font-weight: 700;
+    font-size: 1.1rem;
+    font-family: "Poppins", sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    padding: 0;
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#btnInfo:hover {
+    background-color: #bb86fc;
+    color: #000;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(187, 134, 252, 0.4);
+    border-color: #bb86fc;
+}
+
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
 }
 .subtitulo-destaque {
     font-size: 1.6rem;

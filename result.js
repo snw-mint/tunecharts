@@ -14,6 +14,7 @@ let elements = {};
 let globalTopArtistImage = "";
 let cachedData = { artists: [], tracks: [], albums: [] };
 let spotifyTokenCache = null;
+let periodOffset = 0;
 
 async function carregarTudo() {
     elements = {
@@ -59,6 +60,7 @@ async function carregarTudo() {
     configurarTogglePeriodo();
     await buscarPerfil();
     atualizarDadosDoPeriodo(true);
+    configurarNavegacao();
 }
 
 function configurarTogglePeriodo() {
@@ -85,6 +87,7 @@ function moveGlider(targetButton) {
 
 function getStartOfWeekTimestamp() {
     const d = new Date();
+    d.setDate(d.getDate() - (periodOffset * 7)); 
     const day = d.getDay(); 
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setDate(diff);
@@ -94,8 +97,22 @@ function getStartOfWeekTimestamp() {
 
 function getStartOfMonthTimestamp() {
     const d = new Date();
+    d.setMonth(d.getMonth() - periodOffset); 
     d.setDate(1);
     d.setHours(0, 0, 0, 0);
+    return Math.floor(d.getTime() / 1000);
+}
+
+function getEndOfPeriodTimestamp(startTs) {
+    const d = new Date(startTs * 1000);
+    if (currentPeriod === "7day") {
+        d.setDate(d.getDate() + 6);
+        d.setHours(23, 59, 59, 999);
+    } else {
+        d.setMonth(d.getMonth() + 1);
+        d.setDate(0);
+        d.setHours(23, 59, 59, 999);
+    }
     return Math.floor(d.getTime() / 1000);
 }
 
@@ -108,22 +125,40 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     globalTopArtistImage = "";
     atualizarBanner("");
 
+    const nextBtn = document.getElementById("nextPeriod");
+    if (nextBtn) nextBtn.style.visibility = periodOffset === 0 ? "hidden" : "visible";
+
     let reportSubtitle = "";
     let labelText = "";
     let scrobblesLabel = "";
     let fromTimestamp = 0;
+    let toTimestamp = 0; 
 
-    const now = new Date();
+    const refDate = new Date();
+    if (currentPeriod === "7day") {
+        refDate.setDate(refDate.getDate() - (periodOffset * 7));
+    } else {
+        refDate.setMonth(refDate.getMonth() - periodOffset);
+    }
 
     if (currentPeriod === "7day") {
         fromTimestamp = getStartOfWeekTimestamp();
-        reportSubtitle = "My Week";
-        labelText = "Since Monday";
+        if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
+        
+        const dayStr = new Date(fromTimestamp * 1000).getDate();
+        const monthStr = getMonthName(new Date(fromTimestamp * 1000));
+        reportSubtitle = `Week of ${monthStr} ${dayStr}`;
+        labelText = "This week";
         scrobblesLabel = "Weekly Scrobbles";
     } else if (currentPeriod === "1month") {
         fromTimestamp = getStartOfMonthTimestamp();
-        const monthName = getMonthName(now);
-        reportSubtitle = `My ${monthName}`;
+        if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
+
+        const monthName = getMonthName(refDate);
+        const year = refDate.getFullYear();
+        const yearStr = year !== new Date().getFullYear() ? ` ${year}` : "";
+        
+        reportSubtitle = `My ${monthName}${yearStr}`;
         labelText = `In ${monthName}`;
         scrobblesLabel = "Monthly Scrobbles";
     }
@@ -132,10 +167,10 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     elements.sqReportTitle.textContent = reportSubtitle;
     elements.storyScrobblesLabel.textContent = scrobblesLabel;
     elements.sqScrobblesLabel.textContent = scrobblesLabel;
-    if (elements.monthlyLabel) elements.monthlyLabel.textContent = labelText;
+    if (elements.monthlyLabel) elements.monthlyLabel.textContent = reportSubtitle; 
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
 
-    await processarDadosCalendario(fromTimestamp);
+    await processarDadosCalendario(fromTimestamp, toTimestamp);
 
     if (isInitialLoad) {
         const activeButton = document.querySelector(".toggle-option.active");
@@ -143,18 +178,28 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     }
 }
 
-async function processarDadosCalendario(fromTimestamp) {
+async function processarDadosCalendario(fromTimestamp, toTimestamp) { // <--- CORREÇÃO 1: Adicionado toTimestamp aqui
     try {
-
-        const tracks = await buscarHistoricoCompleto(fromTimestamp);
+        // CORREÇÃO 2: Passando toTimestamp para a função de busca
+        const tracks = await buscarHistoricoCompleto(fromTimestamp, toTimestamp);
         
         const totalScrobbles = tracks.length;
         elements.userScrobbles.textContent = totalScrobbles.toLocaleString("pt-BR");
         if (elements.storyScrobblesValue) elements.storyScrobblesValue.textContent = totalScrobbles.toLocaleString("en-US");
         if (elements.sqScrobblesValue) elements.sqScrobblesValue.textContent = totalScrobbles.toLocaleString("en-US");
         
-        const daysPassed = Math.max(1, (Date.now()/1000 - fromTimestamp) / 86400);
-        const dailyAvg = Math.round(totalScrobbles / daysPassed);
+        // Cálculo da Média Diária (Agora toTimestamp existe neste escopo)
+        let daysDivisor = 1;
+        if (toTimestamp > 0) {
+             // Passado: divide pelo tamanho exato do periodo
+             daysDivisor = (toTimestamp - fromTimestamp) / 86400;
+        } else {
+             // Presente: divide pelo tempo decorrido até agora
+             daysDivisor = (Date.now()/1000 - fromTimestamp) / 86400;
+        }
+        daysDivisor = Math.max(1, Math.round(daysDivisor));
+        
+        const dailyAvg = Math.round(totalScrobbles / daysDivisor);
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = dailyAvg.toLocaleString("pt-BR");
 
         const artistMap = {};
@@ -209,16 +254,16 @@ async function processarDadosCalendario(fromTimestamp) {
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.classList.remove("skeleton");
     }
 }
-
-async function buscarHistoricoCompleto(fromTimestamp) {
+async function buscarHistoricoCompleto(fromTimestamp, toTimestamp = 0) {
     let allTracks = [];
     let page = 1;
     let totalPages = 1;
-    const limit = 200; 
+    const limit = 200;
+    const toParam = toTimestamp > 0 ? `&to=${toTimestamp}` : "";
 
     try {
         do {
-            const url = `/api/?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}`;
+            const url = `/api/?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`;
             const res = await fetch(url);
             const data = await res.json();
 
@@ -227,8 +272,9 @@ async function buscarHistoricoCompleto(fromTimestamp) {
             const tracks = Array.isArray(data.recenttracks.track) 
                 ? data.recenttracks.track 
                 : [data.recenttracks.track];
-
-            allTracks = allTracks.concat(tracks.filter(t => t.date)); 
+            
+            // Filtra 'Now Playing' (que não tem data) e junta
+            allTracks = allTracks.concat(tracks.filter(t => t.date));
 
             if (data.recenttracks["@attr"]) {
                 totalPages = parseInt(data.recenttracks["@attr"].totalPages);
@@ -465,6 +511,27 @@ function configurarEventosHub() {
             setTimeout(() => gerarImagemFinal(selectedFormat, selectedAccentColor, chartsToInclude), 50);
         };
     });
+}
+
+function configurarNavegacao() {
+    const prevBtn = document.getElementById("prevPeriod");
+    const nextBtn = document.getElementById("nextPeriod");
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            periodOffset++; // Volta pro passado
+            atualizarDadosDoPeriodo(false);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            if (periodOffset > 0) {
+                periodOffset--; // Vai pro futuro (se não for 0)
+                atualizarDadosDoPeriodo(false);
+            }
+        });
+    }
 }
 
 async function gerarImagemFinal(format, accentColor, selectedCharts) {

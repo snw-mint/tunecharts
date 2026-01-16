@@ -2,7 +2,7 @@ const params = new URLSearchParams(window.location.search);
 const username = params.get("user");
 if (!username) window.location.href = "index.html";
 
-let currentPeriod = "1month"; 
+let currentPeriod = "1month"; // '7day' (Week) ou '1month' (Month)
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story";
 let chartsToInclude = ["artists", "tracks"];
@@ -10,6 +10,7 @@ let elements = {};
 let globalTopArtistImage = "";
 let spotifyTokenCache = null;
 let cachedData = { artists: [], tracks: [] };
+let periodOffset = 0; // Controle de Navegação (0 = Atual)
 
 async function carregarTudo() {
     elements = {
@@ -57,6 +58,7 @@ async function carregarTudo() {
     };
     configurarEventosHub();
     configurarTogglePeriodo();
+    configurarNavegacao(); // Ativa as setas
     await buscarPerfil();
     atualizarDadosDoPeriodo(true);
 }
@@ -83,8 +85,32 @@ function moveGlider(targetButton) {
     elements.glider.style.transform = `translateX(${offsetLeft}px)`;
 }
 
+function configurarNavegacao() {
+    const prevBtn = document.getElementById("prevPeriod");
+    const nextBtn = document.getElementById("nextPeriod");
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            periodOffset++;
+            atualizarDadosDoPeriodo(false);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            if (periodOffset > 0) {
+                periodOffset--;
+                atualizarDadosDoPeriodo(false);
+            }
+        });
+    }
+}
+
+// --- LÓGICA DE DATAS ---
+
 function getStartOfWeekTimestamp() {
     const d = new Date();
+    d.setDate(d.getDate() - (periodOffset * 7));
     const day = d.getDay(); 
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setDate(diff);
@@ -94,8 +120,22 @@ function getStartOfWeekTimestamp() {
 
 function getStartOfMonthTimestamp() {
     const d = new Date();
+    d.setMonth(d.getMonth() - periodOffset);
     d.setDate(1);
     d.setHours(0, 0, 0, 0);
+    return Math.floor(d.getTime() / 1000);
+}
+
+function getEndOfPeriodTimestamp(startTs) {
+    const d = new Date(startTs * 1000);
+    if (currentPeriod === "7day") {
+        d.setDate(d.getDate() + 6);
+        d.setHours(23, 59, 59, 999);
+    } else {
+        d.setMonth(d.getMonth() + 1);
+        d.setDate(0);
+        d.setHours(23, 59, 59, 999);
+    }
     return Math.floor(d.getTime() / 1000);
 }
 
@@ -103,11 +143,18 @@ function getMonthName(date) {
     return date.toLocaleString('en-US', { month: 'long' });
 }
 
+// --- ENGINE PRINCIPAL (Counter Fix) ---
+
 async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     resetarChartsParaSkeleton();
     globalTopArtistImage = "";
     atualizarBanner("");
 
+    // Controle Visual das Setas
+    const nextBtn = document.getElementById("nextPeriod");
+    if (nextBtn) nextBtn.style.visibility = periodOffset === 0 ? "hidden" : "visible";
+
+    // Reseta visual do Empty State para o Normal
     if (elements.chartsGrid) elements.chartsGrid.style.display = "grid";
     if (elements.genReportBtn) elements.genReportBtn.style.display = "flex";
     if (elements.mainTitle) {
@@ -119,20 +166,36 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     let labelText = "";
     let scrobblesLabel = "";
     let fromTimestamp = 0;
+    let toTimestamp = 0;
     let periodNameForEmpty = "";
 
-    const now = new Date();
+    const refDate = new Date();
+    if (currentPeriod === "7day") {
+        refDate.setDate(refDate.getDate() - (periodOffset * 7));
+    } else {
+        refDate.setMonth(refDate.getMonth() - periodOffset);
+    }
 
     if (currentPeriod === "7day") {
         fromTimestamp = getStartOfWeekTimestamp();
-        reportSubtitle = "My Week";
+        if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
+        
+        const dayStr = new Date(fromTimestamp * 1000).getDate();
+        const monthStr = getMonthName(new Date(fromTimestamp * 1000));
+        
+        reportSubtitle = `Week of ${monthStr} ${dayStr}`;
         periodNameForEmpty = "this week";
-        labelText = "Since Monday";
+        labelText = "This week";
         scrobblesLabel = "Weekly Time";
     } else if (currentPeriod === "1month") {
         fromTimestamp = getStartOfMonthTimestamp();
-        const monthName = getMonthName(now);
-        reportSubtitle = `My ${monthName}`;
+        if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
+        
+        const monthName = getMonthName(refDate);
+        const year = refDate.getFullYear();
+        const yearStr = year !== new Date().getFullYear() ? ` ${year}` : "";
+
+        reportSubtitle = `My ${monthName}${yearStr}`;
         periodNameForEmpty = `in ${monthName}`;
         labelText = `In ${monthName}`;
         scrobblesLabel = "Monthly Time";
@@ -142,10 +205,10 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     if (elements.sqReportTitle) elements.sqReportTitle.textContent = reportSubtitle;
     if (elements.storyScrobblesLabel) elements.storyScrobblesLabel.textContent = scrobblesLabel;
     if (elements.sqScrobblesLabel) elements.sqScrobblesLabel.textContent = scrobblesLabel;
-    if (elements.monthlyLabel) elements.monthlyLabel.textContent = labelText;
+    if (elements.monthlyLabel) elements.monthlyLabel.textContent = reportSubtitle;
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
 
-    await processarDadosTempoCalendario(fromTimestamp, periodNameForEmpty);
+    await processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodNameForEmpty);
 
     if (isInitialLoad) {
         const activeButton = document.querySelector(".toggle-option.active");
@@ -175,10 +238,10 @@ async function criarDicionarioDeDuracao(periodMatch) {
     return map;
 }
 
-async function processarDadosTempoCalendario(fromTimestamp, periodName) {
+async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodName) {
     try {
         const durationPromise = criarDicionarioDeDuracao(currentPeriod);
-        const historyPromise = buscarHistoricoCompleto(fromTimestamp);
+        const historyPromise = buscarHistoricoCompleto(fromTimestamp, toTimestamp);
 
         const [durationMap, tracks] = await Promise.all([durationPromise, historyPromise]);
 
@@ -214,8 +277,16 @@ async function processarDadosTempoCalendario(fromTimestamp, periodName) {
         const totalMinutes = Math.floor(totalSeconds / 60);
         const formattedTotal = totalMinutes.toLocaleString("en-US") + " Minutes";
         
-        const daysPassed = Math.max(1, (Date.now()/1000 - fromTimestamp) / 86400);
-        const dailyAvg = Math.round(totalMinutes / daysPassed);
+        // Média Diária Inteligente (Passado vs Presente)
+        let daysDivisor = 1;
+        if (toTimestamp > 0) {
+             daysDivisor = (toTimestamp - fromTimestamp) / 86400;
+        } else {
+             daysDivisor = (Date.now()/1000 - fromTimestamp) / 86400;
+        }
+        daysDivisor = Math.max(1, Math.round(daysDivisor));
+
+        const dailyAvg = Math.round(totalMinutes / daysDivisor);
         const formattedDaily = dailyAvg.toLocaleString("en-US") + " Mins/Day";
 
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = formattedDaily;
@@ -303,15 +374,16 @@ function tratarEstadoVazio(periodName) {
     atualizarBanner("");
 }
 
-async function buscarHistoricoCompleto(fromTimestamp) {
+async function buscarHistoricoCompleto(fromTimestamp, toTimestamp = 0) {
     let allTracks = [];
     let page = 1;
     let totalPages = 1;
     const limit = 200; 
+    const toParam = toTimestamp > 0 ? `&to=${toTimestamp}` : "";
 
     try {
         do {
-            const url = `/api/?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}`;
+            const url = `/api/?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`;
             const res = await fetch(url);
             const data = await res.json();
 
@@ -450,6 +522,7 @@ function renderizarPreviewLista(elementId, dataList, type) {
     });
     container.innerHTML = htmlMain || "No data.";
 }
+
 function formatTimeShort(totalSeconds) {
     const m = Math.floor(totalSeconds / 60);
     return `${m}m`;

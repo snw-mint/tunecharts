@@ -132,6 +132,25 @@
     z-index: 2;
     transition: color 0.3s ease-out;
 }
+.nav-arrow {
+    background: transparent;
+    border: none;
+    color: #bb86fc; /* Sua cor de destaque */
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: opacity 0.2s, transform 0.2s;
+    user-select: none;
+}
+
+.nav-arrow:hover {
+    opacity: 0.7;
+    transform: scale(1.1);
+}
+
+.nav-arrow:active {
+    transform: scale(0.9);
+}
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
