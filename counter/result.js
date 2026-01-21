@@ -219,7 +219,7 @@ async function criarDicionarioDeDuracao(periodMatch) {
     const map = {};
     try {
         const apiPeriod = periodMatch === '7day' ? '7day' : '1month';
-        const url = `/api/?method=user.gettoptracks&user=${username}&limit=1000&period=${apiPeriod}`;
+        const url = CONFIG.counterUrl(`?method=user.gettoptracks&user=${username}&limit=1000&period=${apiPeriod}`);
         const res = await fetch(url);
         const data = await res.json();
         
@@ -409,7 +409,7 @@ async function buscarHistoricoCompleto(fromTimestamp, toTimestamp = 0) {
 
     try {
         do {
-            const url = `/api/?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`;
+            const url = CONFIG.counterUrl(`?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`);
             const res = await fetch(url);
             const data = await res.json();
 
@@ -447,7 +447,7 @@ function resetarChartsParaSkeleton() {
 async function obterTokenSpotify() {
     if (spotifyTokenCache) return spotifyTokenCache;
     try {
-        const res = await fetch("/api/spotify-token");
+        const res = await fetch(CONFIG.counterUrl("spotify-token"));
         const data = await res.json();
         if (data.access_token) {
             spotifyTokenCache = data.access_token;
@@ -480,8 +480,7 @@ async function buscarImagemSpotify(artist, trackName, type) { // O parâmetro co
     }
 
     try {
-        const url = `https://api.spotify.com/v1/search?${query}&type=${searchType}&limit=1`;
-        
+        const url = `https://api.spotify.com/v1/search?q=${query}&type=${searchType}&limit=1`;
         const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
 
@@ -499,7 +498,7 @@ async function buscarImagemSpotify(artist, trackName, type) { // O parâmetro co
 
 async function buscarPerfil() {
     try {
-        const url = `/api/?method=user.getinfo&user=${username}`;
+        const url = CONFIG.counterUrl(`?method=user.getinfo&user=${username}`);
         const res = await fetch(url);
         const data = await res.json();
         const user = data.user;

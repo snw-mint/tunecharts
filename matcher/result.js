@@ -46,7 +46,7 @@ async function init() {
 }
 
 async function fetchLastFm(method, user, period = "", limit = "") {
-    let url = `/api/?method=${method}&user=${user}`;
+    let url = CONFIG.apiUrl(`?method=${method}&user=${user}`);
     if (period) url += `&period=${period}`;
     if (limit) url += `&limit=${limit}`;
     
@@ -314,7 +314,7 @@ function updateImageInDom(elementId, url) {
 async function obterTokenSpotify() {
     if (spotifyTokenCache) return spotifyTokenCache;
     try {
-        const res = await fetch("/api/spotify-token");
+        const res = await fetch(CONFIG.apiUrl("spotify-token"));
         const data = await res.json();
         if (data.access_token) {
             spotifyTokenCache = data.access_token;

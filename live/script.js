@@ -1,6 +1,6 @@
 const POLL_INTERVAL = 5000;
-const LASTFM_API_BASE = "/api/?method=";
-const SPOTIFY_TOKEN_API = "/api/spotify-token";
+const LASTFM_API_BASE = CONFIG.apiUrl("?method=");
+const SPOTIFY_TOKEN_API = CONFIG.apiUrl("spotify-token");
 const defaultSettings = { layout: "layout-center", showTrack: !0, showArtist: !0, bgMode: "artist", blurBg: !0 };
 let currentSettings = JSON.parse(localStorage.getItem("tunecharts_live_settings")) || defaultSettings;
 const elements = {
@@ -274,11 +274,11 @@ async function buscarImagensSpotify(artist, trackName) {
     const cleanTrack = encodeURIComponent(trackName.split(" - ")[0].split("(")[0]);
     const result = { artist: null, album: null };
     try {
-        const urlArtist = `https://api.spotify.com/v1/search?q=artist:"${cleanArtist}"&type=artist&limit=1`;
+       const urlArtist = `https://api.spotify.com/v1/search?q=${cleanArtist}&type=artist&limit=1`;
         const resArtist = await fetch(urlArtist, { headers: { Authorization: `Bearer ${token}` } });
         const dataArtist = await resArtist.json();
         if (dataArtist.artists?.items?.length > 0) result.artist = dataArtist.artists.items[0].images[0]?.url;
-        const urlTrack = `https://api.spotify.com/v1/search?q=track:"${cleanTrack}"%20artist:"${cleanArtist}"&type=track&limit=1`;
+       const urlTrack = `https://api.spotify.com/v1/search?q=${cleanTrack} artist:${cleanArtist}&type=track&limit=1`;
         const resTrack = await fetch(urlTrack, { headers: { Authorization: `Bearer ${token}` } });
         const dataTrack = await resTrack.json();
         if (dataTrack.tracks?.items?.length > 0) result.album = dataTrack.tracks.items[0].album.images[0]?.url;
