@@ -11,6 +11,15 @@ let globalTopArtistImage = "";
 let spotifyTokenCache = null;
 let cachedData = { artists: [], tracks: [] };
 let periodOffset = 0;
+let loadingInterval = null;
+const loadingPhrases = [
+    "Fetching your history...",
+    "Scanning tracks...",
+    "Calculating durations...",
+    "Doing the math...",
+    "Finding top artists...",
+    "Almost there..."
+];
 
 async function carregarTudo() {
     elements = {
@@ -153,16 +162,16 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
         elements.mainTitle.style.opacity = "1";
     }
     if (nextBtn) {
-    nextBtn.style.visibility = ""; 
-    if (periodOffset === 0) {
-        nextBtn.classList.add("nav-disabled");
-    } else {
-        nextBtn.classList.remove("nav-disabled");
+        nextBtn.style.visibility = ""; 
+        if (periodOffset === 0) {
+            nextBtn.classList.add("nav-disabled");
+        } else {
+            nextBtn.classList.remove("nav-disabled");
+        }
     }
-}
 
     let reportSubtitle = "";
-    let labelText = "";
+    let labelText = ""; 
     let scrobblesLabel = "";
     let fromTimestamp = 0;
     let toTimestamp = 0;
@@ -184,7 +193,7 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
         
         reportSubtitle = `Week of ${monthStr} ${dayStr}`;
         periodNameForEmpty = "this week";
-        labelText = "This week";
+        labelText = "This week"; 
         scrobblesLabel = "Weekly Time";
     } else if (currentPeriod === "1month") {
         fromTimestamp = getStartOfMonthTimestamp();
@@ -196,7 +205,7 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
 
         reportSubtitle = `My ${monthName}${yearStr}`;
         periodNameForEmpty = `in ${monthName}`;
-        labelText = `In ${monthName}`;
+        labelText = `In ${monthName}`; 
         scrobblesLabel = "Monthly Time";
     }
 
@@ -204,10 +213,10 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     if (elements.sqReportTitle) elements.sqReportTitle.textContent = reportSubtitle;
     if (elements.storyScrobblesLabel) elements.storyScrobblesLabel.textContent = scrobblesLabel;
     if (elements.sqScrobblesLabel) elements.sqScrobblesLabel.textContent = scrobblesLabel;
-    if (elements.monthlyLabel) elements.monthlyLabel.textContent = reportSubtitle;
-    if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
+    startLoadingPhrases(); 
 
-    await processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodNameForEmpty);
+    if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
+    await processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodNameForEmpty, labelText);
 
     if (isInitialLoad) {
         const activeButton = document.querySelector(".toggle-option.active");
@@ -237,7 +246,7 @@ async function criarDicionarioDeDuracao(periodMatch) {
     return map;
 }
 
-async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodName) {
+async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodName, finalLabelText) {
     try {
         const durationPromise = criarDicionarioDeDuracao(currentPeriod);
         const historyPromise = buscarHistoricoCompleto(fromTimestamp, toTimestamp);
@@ -278,7 +287,9 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
                     albumMap[albumKey].seconds += duration;
                 }
             }
+            
         });
+
 
         const totalMinutes = Math.floor(totalSeconds / 60);
         const formattedTotal = totalMinutes.toLocaleString("en-US") + " Minutes";
@@ -371,13 +382,15 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
             });
         }
 
-    } catch (error) {
+} catch (error) {
         console.error("Erro calculando tempo:", error);
         if (elements.userScrobbles) elements.userScrobbles.textContent = "Error";
         document.querySelectorAll(".lista-top").forEach((el) => (el.innerHTML = "Error loading."));
     } finally {
         if (elements.userScrobbles) elements.userScrobbles.classList.remove("skeleton");
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.classList.remove("skeleton");
+
+        stopLoadingPhrases(finalLabelText || "Period Review");
     }
 }
 
@@ -544,11 +557,7 @@ function renderizarPreviewLista(elementId, dataList, type) {
     mainItems.forEach((item, i) => {
         const isTop1 = i === 0;
         let text = item.name;
-        
-        // --- CORREÇÃO AQUI: Definimos a variável timeStr antes de usar ---
         const timeStr = formatTimeShort(item.seconds);
-        // ----------------------------------------------------------------
-
         let subtext = "";
         if (type === "track" || type === "album") {
             subtext = `<span style="opacity:0.6"> - ${item.artist.name}</span>`;
@@ -856,6 +865,33 @@ document.addEventListener("DOMContentLoaded", () => {
         nextBtn.addEventListener("click", () => animateLabel("next"));
     }
 });
+
+function startLoadingPhrases() {
+    if (!elements.monthlyLabel) return;
+    
+    let phraseIndex = 0;
+    elements.monthlyLabel.classList.add("loading-text-anim");
+    
+    elements.monthlyLabel.textContent = loadingPhrases[0];
+
+    if (loadingInterval) clearInterval(loadingInterval);
+
+    loadingInterval = setInterval(() => {
+        phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
+        elements.monthlyLabel.textContent = loadingPhrases[phraseIndex];
+    }, 2000);
+}
+
+function stopLoadingPhrases(finalText) {
+    if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+    }
+    if (elements.monthlyLabel) {
+        elements.monthlyLabel.classList.remove("loading-text-anim");
+        if (finalText) elements.monthlyLabel.textContent = finalText;
+    }
+}
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", carregarTudo);

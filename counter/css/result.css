@@ -42,6 +42,16 @@
     width: 100%;
     max-width: 900px;
 }
+.loading-text-anim {
+    animation: pulseText 1.5s infinite ease-in-out;
+    color: #bb86fc !important;
+    font-weight: 600;
+}
+@keyframes pulseText {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
 .foto-perfil {
     width: 200px;
     height: 200px;
