@@ -15,6 +15,14 @@ let globalTopArtistImage = "";
 let cachedData = { artists: [], tracks: [], albums: [] };
 let spotifyTokenCache = null;
 let periodOffset = 0;
+let loadingInterval = null;
+const loadingPhrases = [
+    "Connecting to Last.fm...",
+    "Counting your scrobbles...",
+    "Sorting top artists...",
+    "Ranking your tracks...",
+    "Almost ready..."
+];
 
 async function carregarTudo() {
     elements = {
@@ -124,22 +132,29 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     resetarChartsParaSkeleton();
     globalTopArtistImage = "";
     atualizarBanner("");
-
+    
     const nextBtn = document.getElementById("nextPeriod");
-    if (nextBtn) {
-    nextBtn.style.visibility = ""; 
-    if (periodOffset === 0) {
-        nextBtn.classList.add("nav-disabled");
-    } else {
-        nextBtn.classList.remove("nav-disabled");
+    if (elements.chartsGrid) elements.chartsGrid.style.display = "grid";
+    if (elements.genReportBtn) elements.genReportBtn.style.display = "flex";
+    if (elements.mainTitle) {
+        elements.mainTitle.textContent = "Your Top List";
+        elements.mainTitle.style.opacity = "1";
     }
-}
+    if (nextBtn) {
+        nextBtn.style.visibility = ""; 
+        if (periodOffset === 0) {
+            nextBtn.classList.add("nav-disabled");
+        } else {
+            nextBtn.classList.remove("nav-disabled");
+        }
+    }
 
     let reportSubtitle = "";
-    let labelText = "";
+    let labelText = ""; 
     let scrobblesLabel = "";
     let fromTimestamp = 0;
-    let toTimestamp = 0; 
+    let toTimestamp = 0;
+    let periodNameForEmpty = "";
 
     const refDate = new Date();
     if (currentPeriod === "7day") {
@@ -154,31 +169,34 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
         
         const dayStr = new Date(fromTimestamp * 1000).getDate();
         const monthStr = getMonthName(new Date(fromTimestamp * 1000));
+        
         reportSubtitle = `Week of ${monthStr} ${dayStr}`;
-        labelText = "This week";
-        scrobblesLabel = "Weekly Scrobbles";
+        periodNameForEmpty = "this week";
+        labelText = "This week"; 
+        scrobblesLabel = "Weekly Scrobbles"; 
     } else if (currentPeriod === "1month") {
         fromTimestamp = getStartOfMonthTimestamp();
         if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
-
+        
         const monthName = getMonthName(refDate);
         const year = refDate.getFullYear();
         const yearStr = year !== new Date().getFullYear() ? ` ${year}` : "";
-        
+
         reportSubtitle = `My ${monthName}${yearStr}`;
-        labelText = `In ${monthName}`;
-        scrobblesLabel = "Monthly Scrobbles";
+        periodNameForEmpty = `in ${monthName}`;
+        labelText = `In ${monthName}`; 
+        scrobblesLabel = "Monthly Scrobbles"; 
     }
 
-    elements.storySubtitle.textContent = reportSubtitle;
-    elements.sqReportTitle.textContent = reportSubtitle;
-    elements.storyScrobblesLabel.textContent = scrobblesLabel;
-    elements.sqScrobblesLabel.textContent = scrobblesLabel;
-    if (elements.monthlyLabel) elements.monthlyLabel.textContent = reportSubtitle; 
+    if (elements.storySubtitle) elements.storySubtitle.textContent = reportSubtitle;
+    if (elements.sqReportTitle) elements.sqReportTitle.textContent = reportSubtitle;
+    if (elements.storyScrobblesLabel) elements.storyScrobblesLabel.textContent = scrobblesLabel;
+    if (elements.sqScrobblesLabel) elements.sqScrobblesLabel.textContent = scrobblesLabel;
+    
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
-
-    await processarDadosCalendario(fromTimestamp, toTimestamp);
-
+    if (elements.monthlyLabel) elements.monthlyLabel.textContent = labelText; 
+    startLoadingPhrases(); 
+    await processarDadosRelatorio(fromTimestamp, toTimestamp, periodNameForEmpty, labelText);
     if (isInitialLoad) {
         const activeButton = document.querySelector(".toggle-option.active");
         if (activeButton) setTimeout(() => moveGlider(activeButton), 100);
@@ -253,6 +271,47 @@ async function processarDadosCalendario(fromTimestamp, toTimestamp) {
         document.querySelectorAll(".lista-top").forEach(el => el.innerHTML = "Error loading.");
     } finally {
         elements.userScrobbles.classList.remove("skeleton");
+        stopLoadingPhrases();
+        if (elements.scrobblesPerDay) elements.scrobblesPerDay.classList.remove("skeleton");
+    }
+}
+
+async function processarDadosRelatorio(fromTimestamp, toTimestamp, periodNameForEmpty, finalLabelText) {
+    try {
+        await processarDadosCalendario(fromTimestamp, toTimestamp);
+        const limit = 50;
+        const toParam = toTimestamp > 0 ? `&to=${toTimestamp}` : "";
+
+        const artistsUrl = CONFIG.apiUrl(`?method=user.gettopartists&user=${username}&limit=${limit}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`);
+        const tracksUrl = CONFIG.apiUrl(`?method=user.gettoptracks&user=${username}&limit=${limit}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`);
+        const albumsUrl = CONFIG.apiUrl(`?method=user.gettopalbums&user=${username}&limit=${limit}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`);
+
+        const [arRes, trRes, alRes] = await Promise.all([fetch(artistsUrl), fetch(tracksUrl), fetch(albumsUrl)]);
+        const [arData, trData, alData] = await Promise.all([arRes.json(), trRes.json(), alRes.json()]);
+
+        const artists = (arData.topartists && arData.topartists.artist) ?
+            (Array.isArray(arData.topartists.artist) ? arData.topartists.artist : [arData.topartists.artist]).map(a => ({ name: a.name, playcount: parseInt(a.playcount || 0) })) : [];
+
+        const tracks = (trData.toptracks && trData.toptracks.track) ?
+            (Array.isArray(trData.toptracks.track) ? trData.toptracks.track : [trData.toptracks.track]).map(t => ({ name: t.name, artist: { name: t.artist?.name || t.artist?.['#text'] || '' }, playcount: parseInt(t.playcount || 0) })) : [];
+
+        const albums = (alData.topalbums && alData.topalbums.album) ?
+            (Array.isArray(alData.topalbums.album) ? alData.topalbums.album : [alData.topalbums.album]).map(a => ({ name: a.name, artist: { name: a.artist?.name || a.artist?.['#text'] || '' }, playcount: parseInt(a.playcount || 0) })) : [];
+
+        cachedData.artists = artists;
+        cachedData.tracks = tracks;
+        cachedData.albums = albums;
+
+        renderizarListaProcessada("cardArtists", artists, "artist");
+        renderizarListaProcessada("cardTracks", tracks, "track");
+        renderizarListaProcessada("cardAlbums", albums, "album");
+
+    } catch (err) {
+        console.error("Erro processando relatorio:", err);
+        document.querySelectorAll(".lista-top").forEach(el => el.innerHTML = "Error loading.");
+    } finally {
+        stopLoadingPhrases(finalLabelText || "Period Review");
+        if (elements.userScrobbles) elements.userScrobbles.classList.remove("skeleton");
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.classList.remove("skeleton");
     }
 }
@@ -519,7 +578,7 @@ function configurarNavegacao() {
 
     if (prevBtn) {
         prevBtn.addEventListener("click", () => {
-            periodOffset++; // Volta pro passado
+            periodOffset++; 
             atualizarDadosDoPeriodo(false);
         });
     }
@@ -527,7 +586,7 @@ function configurarNavegacao() {
     if (nextBtn) {
         nextBtn.addEventListener("click", () => {
             if (periodOffset > 0) {
-                periodOffset--; // Vai pro futuro (se não for 0)
+                periodOffset--; 
                 atualizarDadosDoPeriodo(false);
             }
         });
@@ -697,6 +756,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+function startLoadingPhrases() {
+    if (!elements.monthlyLabel) return;
+    
+    let phraseIndex = 0;
+    elements.monthlyLabel.classList.add("loading-text-anim");
+    elements.monthlyLabel.textContent = loadingPhrases[0];
+
+    if (loadingInterval) clearInterval(loadingInterval);
+
+    loadingInterval = setInterval(() => {
+        phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
+        elements.monthlyLabel.textContent = loadingPhrases[phraseIndex];
+    }, 2000);
+}
+
+function stopLoadingPhrases(finalText) {
+    if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+    }
+    if (elements.monthlyLabel) {
+        elements.monthlyLabel.classList.remove("loading-text-anim");
+        if (finalText) elements.monthlyLabel.textContent = finalText;
+    }
+}
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", carregarTudo);
 else carregarTudo();

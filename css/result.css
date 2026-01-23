@@ -30,6 +30,16 @@
     background: linear-gradient(to bottom, rgb(15 15 15 / 0.3) 0%, rgb(15 15 15 / 0.95) 70%, #0f0f0f 100%);
     z-index: 1;
 }
+.loading-text-anim {
+    animation: pulseText 1.5s infinite ease-in-out;
+    color: #bb86fc !important;
+    font-weight: 600;
+}
+@keyframes pulseText {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
 .perfil-container {
     position: relative;
     z-index: 10;
