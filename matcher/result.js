@@ -1,26 +1,20 @@
 const params = new URLSearchParams(window.location.search);
 const user1 = params.get("user1");
 const user2 = params.get("user2");
-
 if (!user1 || !user2) window.location.href = "index.html";
-
 const iconDownload = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="m8 12 4 4m0 0 4-4m-4 4V4M4 20h16"/></svg>`;
 const iconCheck = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 const iconLoading = `<svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>`;
-
 let spotifyTokenCache = null;
 let globalTopCommonImage = ""; 
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story"; 
 let isGenerating = false;
-
 let globalDisplayName1 = "";
 let globalDisplayName2 = "";
-
 async function init() {
     console.log(`Starting Match: ${user1} vs ${user2}`);
     setupUIEvents();
-
     try {
         const [u1Profile, u2Profile, u1Artists, u2Artists] = await Promise.all([
             fetchLastFm("user.getinfo", user1),
@@ -28,16 +22,12 @@ async function init() {
             fetchLastFm("user.gettopartists", user1, "1month", 50), 
             fetchLastFm("user.gettopartists", user2, "1month", 50)
         ]);
-
         renderProfiles(u1Profile, u2Profile);
         renderScrobbles(u1Profile, u2Profile);
-
         const matchResult = calculateCompatibility(u1Artists, u2Artists);
-
         renderLists(matchResult, u1Artists, u2Artists);
         updateScoreUI(matchResult.score);
         loadImages(matchResult.commonArtists, u1Artists, u2Artists);
-
     } catch (error) {
         console.error("Erro crítico:", error);
         alert("Ops! Could not load data. Check if usernames are correct.");
@@ -49,7 +39,6 @@ async function fetchLastFm(method, user, period = "", limit = "") {
     let url = CONFIG.apiUrl(`?method=${method}&user=${user}`);
     if (period) url += `&period=${period}`;
     if (limit) url += `&limit=${limit}`;
-    
     const res = await fetch(url);
     const data = await res.json();
     if (data.error) throw new Error(data.message);
@@ -99,6 +88,7 @@ function calculateCompatibility(list1, list2) {
     if (commonArtists.length > 0 && finalPercent < 5) finalPercent = 5;
     return { score: finalPercent, commonArtists };
 }
+
 function getTierPoints(rank) {
     if (rank <= 5) return 100;
     if (rank <= 15) return 70;
@@ -106,16 +96,12 @@ function getTierPoints(rank) {
     return 20;
 }
 
-
 function renderProfiles(p1, p2) {
     const u1 = p1.user;
     const u2 = p2.user;
-
     globalDisplayName1 = u1.realname || u1.name;
     globalDisplayName2 = u2.realname || u2.name;
-
     const getImg = (u) => (u.image.find(i => i.size === "extralarge") || u.image[0])["#text"] || "";
-
     document.getElementById("userName1").textContent = globalDisplayName1;
     document.getElementById("userFoto1").src = getImg(u1);
     document.getElementById("userName2").textContent = globalDisplayName2;
@@ -123,14 +109,12 @@ function renderProfiles(p1, p2) {
     document.getElementById("labelUser1").textContent = globalDisplayName1;
     document.getElementById("labelUser2").textContent = globalDisplayName2;
     document.querySelectorAll(".skeleton").forEach(el => el.classList.remove("skeleton"));
-
     const hiddenIds = ["story", "sq"];
     hiddenIds.forEach(prefix => {
         document.getElementById(`${prefix}UserName1`).textContent = globalDisplayName1;
         document.getElementById(`${prefix}UserImg1`).src = getImg(u1);
         document.getElementById(`${prefix}UserName2`).textContent = globalDisplayName2;
         document.getElementById(`${prefix}UserImg2`).src = getImg(u2);
-        
         const img1 = document.getElementById(`${prefix}UserImg1`);
         const img2 = document.getElementById(`${prefix}UserImg2`);
         if(img1) img1.crossOrigin = "anonymous";
@@ -146,7 +130,6 @@ function renderScrobbles(p1, p2) {
 function updateScoreUI(score) {
     const scoreEl = document.getElementById("compatibilityScore");
     const vsScoreEl = document.getElementById("vsScoreTag");
-    
     let current = 0;
     const interval = setInterval(() => {
         current += 2;
@@ -157,19 +140,15 @@ function updateScoreUI(score) {
         if(scoreEl) scoreEl.textContent = current;
         if(vsScoreEl) vsScoreEl.textContent = current + "%"; 
     }, 20);
-
     let text = "Stranger Vibes";
     if (score > 30) text = "Musical Acquaintances";
     if (score > 50) text = "Vibe Buddies";
     if (score > 70) text = "Sonic Soulmates";
     if (score > 90) text = "A Perfect Match!";
-    
     const commonContent = document.getElementById("commonContent");
     if(commonContent) commonContent.textContent = text;
-    
     const storyText = document.getElementById("storySharedText");
     if(storyText) storyText.textContent = text;
-
     document.getElementById("storyScoreValue").textContent = score + "%";
     document.getElementById("sqScoreValue").textContent = score + "%";
 }
@@ -178,12 +157,9 @@ function renderLists(matchData, list1, list2) {
     fillColumn("cardUser1", list1, false); 
     fillHiddenColumn("storyList1", list1, "story"); 
     fillHiddenColumn("sqCol1List", list1, "square"); 
-
     fillColumn("cardUser2", list2, false);
     fillHiddenColumn("storyList2", list2, "story");
     fillHiddenColumn("sqCol2List", list2, "square");
-
- 
     if (matchData.commonArtists.length === 0) {
         document.querySelector("#cardShared .lista-top").innerHTML = 
             "<div style='padding:30px; text-align:center; color:#666; font-size:0.9rem'>No common artists found in Top 50.</div>";
@@ -192,21 +168,16 @@ function renderLists(matchData, list1, list2) {
     }
 }
 
-
 function fillColumn(cardId, items, isShared) {
     const container = document.querySelector(`#${cardId} .lista-top`);
     if (!container) return;
-    
     let html = "";
-
     const loopLimit = isShared ? Math.min(items.length, 10) : 10;
-    
     for (let i = 0; i < loopLimit; i++) {
         const item = items[i];
         const isTop1 = i === 0;
         const name = item ? item.name : "---"; 
         const rankDisplay = isShared ? "" : `#${i + 1}`; 
-        
         if (isTop1) {
             if (item) {
                 const imgId = `img-${cardId}-0`;
@@ -227,28 +198,24 @@ function fillColumn(cardId, items, isShared) {
             html += `<div class="${cssClass}" style="${style}">${rankDisplay} ${name}</div>`;
         }
     }
-
     if (isShared && items.length < 10) {
         html += `
         <div style="padding: 15px; text-align: center; color: #666; font-size: 0.85rem; font-style: italic; opacity: 0.7;">
             Only ${items.length} result${items.length === 1 ? '' : 's'} found.
         </div>`;
     }
-
     container.innerHTML = html;
 }
 
 function fillHiddenColumn(elementId, items, format) {
     const container = document.getElementById(elementId);
     if (!container) return;
-
     let html = "";
     for (let i = 0; i < 5; i++) {
         const item = items[i];
         const rank = i + 1;
         const name = item ? item.name : "---";
         const isEmpty = !item;
-
         if (format === "story") {
             html += `
             <div class="story-item ${i === 0 ? 'top-1' : ''}" style="${isEmpty ? 'opacity:0' : ''}">
@@ -268,29 +235,22 @@ function fillHiddenColumn(elementId, items, format) {
 
 async function loadImages(commonArtists, list1, list2) {
     const bannerArtist = commonArtists.length > 0 ? commonArtists[0].name : list1[0].name;
-
     const bannerUrl = await buscarImagemSpotify(bannerArtist, "artist");
     if (bannerUrl) {
         globalTopCommonImage = bannerUrl;
-        
         const bannerEl = document.getElementById("bannerBackground");
-        
         const imgPreloader = new Image();
         imgPreloader.src = bannerUrl;
-        
         imgPreloader.onload = () => {
             bannerEl.style.backgroundImage = `url('${bannerUrl}')`;
             bannerEl.style.opacity = 1; 
         };
-        
         updateImageInDom("img-cardShared-0", bannerUrl);
     }
-
     if (list1.length > 0) {
         const url1 = await buscarImagemSpotify(list1[0].name, "artist");
         if (url1) updateImageInDom("img-cardUser1-0", url1);
     }
-
     if (list2.length > 0) {
         const url2 = await buscarImagemSpotify(list2[0].name, "artist");
         if (url2) updateImageInDom("img-cardUser2-0", url2);
@@ -303,7 +263,6 @@ function updateImageInDom(elementId, url) {
         const img = new Image();
         img.src = url;
         img.className = "fade-in-image"; 
-        
         img.onload = () => {
             el.innerHTML = "";
             el.appendChild(img);
@@ -342,7 +301,6 @@ function setupUIEvents() {
     const colorModal = document.getElementById("colorPickerModal");
     const genBtn = document.getElementById("btnGerarRelatorio");
     genBtn.addEventListener("click", () => formatModal.style.display = "flex");
-
     document.querySelectorAll(".close-button").forEach(btn => {
         btn.addEventListener("click", function() {
             const modalId = this.getAttribute("data-modal");
@@ -364,7 +322,6 @@ function setupUIEvents() {
             generateFinalImage();
         };
     });
-
     window.onclick = (e) => {
         if (e.target == formatModal) formatModal.style.display = "none";
         if (e.target == colorModal) colorModal.style.display = "none";
@@ -376,7 +333,6 @@ async function generateFinalImage() {
     const btn = document.getElementById("btnGerarRelatorio");
     btn.innerHTML = `${iconLoading} Generating...`;
     btn.disabled = true;
-
     let targetId = selectedFormat === "story" ? "storyCard" : "squareCardV2";
     let targetEl = document.getElementById(targetId);
     let width = 1080;
@@ -385,7 +341,6 @@ async function generateFinalImage() {
     document.getElementById("sqColTitle2").textContent = globalDisplayName2;
     document.getElementById("storyColTitle1").textContent = globalDisplayName1;
     document.getElementById("storyColTitle2").textContent = globalDisplayName2;
-
     try {
         applyDynamicColors(targetEl, selectedAccentColor, selectedFormat);
         await new Promise(r => setTimeout(r, 500));
@@ -402,7 +357,6 @@ async function generateFinalImage() {
         link.download = `AuvlyFM-${user1}-vs-${user2}-${selectedFormat}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-
         btn.innerHTML = `${iconCheck} Saved!`;
         btn.style.backgroundColor = "#28a745";
     } catch (err) {
@@ -418,6 +372,7 @@ async function generateFinalImage() {
         }, 3000);
     }
 }
+
 function applyDynamicColors(card, color, format) {
     if (format === "story") {
         card.querySelectorAll(".story-rank, .stat-label").forEach(el => el.style.color = color);
@@ -442,4 +397,5 @@ function applyDynamicColors(card, color, format) {
         card.style.background = `radial-gradient(circle at top right, ${color}66, #0f0f0f 25%)`;
     }
 }
+
 document.addEventListener("DOMContentLoaded", init);

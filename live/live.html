@@ -6,9 +6,7 @@
     <meta charset="UTF-8" />
     <meta content="width=device-width,initial-scale=1" name="viewport" />
     <meta content="#000000" name="theme-color" />
-    
     <title>AuvlyFM Live</title>
-    
     <link href="css/base.css" rel="stylesheet" />
     <link href="css/style.css" rel="stylesheet" />
     <link href="apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
@@ -16,12 +14,10 @@
     <link href="favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
     <link href="site.webmanifest" rel="manifest" />
 </head>
-
 <body>
     <div class="solid-bg-layer" id="solid-bg-layer"></div>
     <div class="bg-layer" id="bg-layer"></div>
     <div class="bg-overlay"></div>
-
 <nav class="live-controls" id="live-controls">
         <a class="control-btn" href="index.html" title="Stop Live">
             <div class="icon-container">
@@ -32,7 +28,6 @@
             </div>
             <span class="btn-label">Stop Live</span>
         </a>
-
         <button class="control-btn" id="fullscreen-btn" title="Full Screen">
             <div class="icon-container">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
@@ -45,14 +40,12 @@
             <span class="btn-label">Full Screen</span>
         </button>
     </nav>
-
     <div class="user-tag" id="user-settings-trigger">
         <img alt="" src="" class="hidden user-avatar" id="user-avatar" />
         <span id="user-display-name"></span>
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-icon" style="margin-left:5px;opacity:.7"><circle cx="12" cy="12" r="3"/><path d="M13.765 2.152C13.398 2 12.932 2 12 2s-1.398 0-1.765.152a2 2 0 0 0-1.083 1.083c-.092.223-.129.484-.143.863a1.62 1.62 0 0 1-.79 1.353 1.62 1.62 0 0 1-1.567.008c-.336-.178-.579-.276-.82-.308a2 2 0 0 0-1.478.396C4.04 5.79 3.806 6.193 3.34 7s-.7 1.21-.751 1.605a2 2 0 0 0 .396 1.479c.148.192.355.353.676.555.473.297.777.803.777 1.361s-.304 1.064-.777 1.36c-.321.203-.529.364-.676.556a2 2 0 0 0-.396 1.479c.052.394.285.798.75 1.605.467.807.7 1.21 1.015 1.453a2 2 0 0 0 1.479.396c.24-.032.483-.13.819-.308a1.62 1.62 0 0 1 1.567.008c.483.28.77.795.79 1.353.014.38.05.64.143.863a2 2 0 0 0 1.083 1.083C10.602 22 11.068 22 12 22s1.398 0 1.765-.152a2 2 0 0 0 1.083-1.083c.092-.223.129-.483.143-.863.02-.558.307-1.074.79-1.353a1.62 1.62 0 0 1 1.567-.008c.336.178.579.276.819.308a2 2 0 0 0 1.479-.396c.315-.242.548-.646 1.014-1.453s.7-1.21.751-1.605a2 2 0 0 0-.396-1.479c-.148-.192-.355-.353-.676-.555A1.62 1.62 0 0 1 19.562 12c0-.558.304-1.064.777-1.36.321-.203.529-.364.676-.556a2 2 0 0 0 .396-1.479c-.052-.394-.285-.798-.75-1.605-.467-.807-.7-1.21-1.015-1.453a2 2 0 0 0-1.479-.396c-.24.032-.483.13-.82.308a1.62 1.62 0 0 1-1.566-.008 1.62 1.62 0 0 1-.79-1.353c-.014-.38-.05-.64-.143-.863a2 2 0 0 0-1.083-1.083"/></svg>
         <div class="custom-tooltip" id="settings-tooltip">Customize your style here</div>
     </div>
-
     <main class="layout-center player-container" id="player-container">
         <div class="player-content">
             <div class="artwork-wrapper">
@@ -71,14 +64,12 @@
             </div>
         </div>
     </main>
-
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="settings-menu" id="settings-menu">
         <div class="menu-header">
             <h3>Customization</h3>
             <button class="close-btn" id="close-menu">×</button>
         </div>
-        
         <div class="menu-scroll-content">
             <div class="menu-section">
                 <h4>Layout</h4>
@@ -88,7 +79,6 @@
                     <button class="layout-btn" data-layout="layout-bottom-right">Bottom Right</button>
                 </div>
             </div>
-            
             <div class="menu-section">
                 <h4>Visibility</h4>
                 <div class="toggle-row">
@@ -106,7 +96,6 @@
                     </label>
                 </div>
             </div>
-            
             <div class="menu-section">
                 <h4>Background</h4>
                 <div class="layout-options" style="margin-bottom: 15px">
@@ -123,7 +112,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="menu-footer">
             <div class="footer-brand">
                 <img alt="Logo" src="android-chrome-512x512.png" width="20" />
@@ -132,7 +120,6 @@
             <a class="versao" href="https://github.com/AuvlyFM/auvlyfm.github.io//releases" target="_blank">v0.0.0</a>
         </div>
     </aside>
-
     <script src="script.js"></script>
     <script src="../js/version.js"></script>
 </body>

@@ -324,7 +324,6 @@
         opacity: 1;
     }
 }
-
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -900,17 +899,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    
     padding: 0;
     margin: 0;
     appearance: none;
     -webkit-appearance: none;
-    
     transition: all 0.2s ease;
     backdrop-filter: blur(5px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
-
 #btnInfo:hover {
     background-color: #bb86fc;
     color: #000;
@@ -918,7 +914,6 @@ body {
     box-shadow: 0 0 15px rgba(187, 134, 252, 0.4);
     border-color: #bb86fc;
 }
-
 .stats-row {
     display: flex;
     flex-wrap: wrap;

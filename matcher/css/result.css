@@ -727,7 +727,6 @@ input:checked + .slider::before {
         z-index: 1000;
         height: auto;
     }
-
     .duo-header-container {
         flex-direction: row; 
         align-items: flex-start; 

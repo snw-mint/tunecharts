@@ -7,8 +7,6 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
-  
-  # AQUI ESTÁ O DESTAQUE DO SCOPE
   - type: dropdown
     id: scope
     attributes:
@@ -22,7 +20,6 @@ body:
         - "scope: shared"
     validations:
       required: true
-
   - type: textarea
     id: description
     attributes:
@@ -31,7 +28,6 @@ body:
       placeholder: When I click the generate button...
     validations:
       required: true
-
   - type: textarea
     id: steps
     attributes:
@@ -44,7 +40,6 @@ body:
         4. See error
     validations:
       required: true
-
   - type: textarea
     id: expected
     attributes:
@@ -52,7 +47,6 @@ body:
       description: A clear and concise description of what you expected to happen.
     validations:
       required: true
-
   - type: input
     id: user
     attributes:
@@ -61,7 +55,6 @@ body:
       placeholder: snw-mint
     validations:
       required: false
-
   - type: textarea
     id: context
     attributes:

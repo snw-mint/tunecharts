@@ -25,19 +25,23 @@ function startMatch() {
     }
     window.location.href = `result.html?user1=${user1}&user2=${user2}`;
 }
+
 if (btnMatch) {
     btnMatch.addEventListener("click", startMatch);
 }
+
 function handleEnterKey(evento) {
     if (evento.key === "Enter") {
         startMatch();
     }
 }
+
 if (inputUser1) inputUser1.addEventListener("keypress", handleEnterKey);
 if (inputUser2) inputUser2.addEventListener("keypress", handleEnterKey);
 if (document.getElementById("currentYear")) {
     document.getElementById("currentYear").textContent = new Date().getFullYear();
 }
+
 const menuBtn = document.querySelector(".mobile-menu-btn");
 const navOverlay = document.querySelector(".mobile-nav-overlay");
 const mobileLinks = document.querySelectorAll(".mobile-link");

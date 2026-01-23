@@ -7,8 +7,6 @@ body:
     attributes:
       value: |
         Thanks for suggesting a new idea!
-
-  # DESTAQUE DO SCOPE NOVAMENTE
   - type: dropdown
     id: scope
     attributes:
@@ -22,7 +20,6 @@ body:
         - "New Tool Idea"
     validations:
       required: true
-
   - type: textarea
     id: problem
     attributes:
@@ -31,7 +28,6 @@ body:
       placeholder: I'm always frustrated when...
     validations:
       required: false
-
   - type: textarea
     id: solution
     attributes:
@@ -39,7 +35,6 @@ body:
       description: A clear and concise description of what you want to happen.
     validations:
       required: true
-
   - type: textarea
     id: alternatives
     attributes:

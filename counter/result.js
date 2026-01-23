@@ -1,7 +1,6 @@
 const params = new URLSearchParams(window.location.search);
 const username = params.get("user");
 if (!username) window.location.href = "index.html";
-
 let currentPeriod = "1month";
 let selectedAccentColor = "#bb86fc";
 let selectedFormat = "story";
@@ -97,14 +96,12 @@ function moveGlider(targetButton) {
 function configurarNavegacao() {
     const prevBtn = document.getElementById("prevPeriod");
     const nextBtn = document.getElementById("nextPeriod");
-
     if (prevBtn) {
         prevBtn.addEventListener("click", () => {
             periodOffset++;
             atualizarDadosDoPeriodo(false);
         });
     }
-
     if (nextBtn) {
         nextBtn.addEventListener("click", () => {
             if (periodOffset > 0) {
@@ -169,28 +166,23 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
             nextBtn.classList.remove("nav-disabled");
         }
     }
-
     let reportSubtitle = "";
     let labelText = ""; 
     let scrobblesLabel = "";
     let fromTimestamp = 0;
     let toTimestamp = 0;
     let periodNameForEmpty = "";
-
     const refDate = new Date();
     if (currentPeriod === "7day") {
         refDate.setDate(refDate.getDate() - (periodOffset * 7));
     } else {
         refDate.setMonth(refDate.getMonth() - periodOffset);
     }
-
     if (currentPeriod === "7day") {
         fromTimestamp = getStartOfWeekTimestamp();
         if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
-        
         const dayStr = new Date(fromTimestamp * 1000).getDate();
         const monthStr = getMonthName(new Date(fromTimestamp * 1000));
-        
         reportSubtitle = `Week of ${monthStr} ${dayStr}`;
         periodNameForEmpty = "this week";
         labelText = "This week"; 
@@ -198,26 +190,21 @@ async function atualizarDadosDoPeriodo(isInitialLoad = false) {
     } else if (currentPeriod === "1month") {
         fromTimestamp = getStartOfMonthTimestamp();
         if (periodOffset > 0) toTimestamp = getEndOfPeriodTimestamp(fromTimestamp);
-        
         const monthName = getMonthName(refDate);
         const year = refDate.getFullYear();
         const yearStr = year !== new Date().getFullYear() ? ` ${year}` : "";
-
         reportSubtitle = `My ${monthName}${yearStr}`;
         periodNameForEmpty = `in ${monthName}`;
         labelText = `In ${monthName}`; 
         scrobblesLabel = "Monthly Time";
     }
-
     if (elements.storySubtitle) elements.storySubtitle.textContent = reportSubtitle;
     if (elements.sqReportTitle) elements.sqReportTitle.textContent = reportSubtitle;
     if (elements.storyScrobblesLabel) elements.storyScrobblesLabel.textContent = scrobblesLabel;
     if (elements.sqScrobblesLabel) elements.sqScrobblesLabel.textContent = scrobblesLabel;
     startLoadingPhrases(); 
-
     if (elements.storyDisclaimer) elements.storyDisclaimer.textContent = labelText;
     await processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodNameForEmpty, labelText);
-
     if (isInitialLoad) {
         const activeButton = document.querySelector(".toggle-option.active");
         if (activeButton) setTimeout(() => moveGlider(activeButton), 100);
@@ -231,7 +218,6 @@ async function criarDicionarioDeDuracao(periodMatch) {
         const url = CONFIG.counterUrl(`?method=user.gettoptracks&user=${username}&limit=1000&period=${apiPeriod}`);
         const res = await fetch(url);
         const data = await res.json();
-        
         if (data.toptracks && data.toptracks.track) {
             const list = Array.isArray(data.toptracks.track) ? data.toptracks.track : [data.toptracks.track];
             list.forEach(t => {
@@ -250,30 +236,24 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
     try {
         const durationPromise = criarDicionarioDeDuracao(currentPeriod);
         const historyPromise = buscarHistoricoCompleto(fromTimestamp, toTimestamp);
-
         const [durationMap, tracks] = await Promise.all([durationPromise, historyPromise]);
-
         if (tracks.length === 0) {
             tratarEstadoVazio(periodName);
             return;
         }
-        
         let totalSeconds = 0;
         const artistMap = {};
         const trackMap = {};
         const albumMap = {};
-
         tracks.forEach(t => {
             const artistName = t.artist ? t.artist["#text"] : "Unknown";
             const trackName = t.name;
             const albumName = t.album ? t.album["#text"] : "";
-            
             let duration = parseInt(t.duration || "0");
             if (duration === 0) {
                 const key = `${trackName.toLowerCase()}_||_${artistName.toLowerCase()}`;
                 duration = durationMap[key] || 0;
             }
-            
             if (duration > 0) {
                 totalSeconds += duration;
                 if (!artistMap[artistName]) artistMap[artistName] = 0;
@@ -287,10 +267,7 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
                     albumMap[albumKey].seconds += duration;
                 }
             }
-            
         });
-
-
         const totalMinutes = Math.floor(totalSeconds / 60);
         const formattedTotal = totalMinutes.toLocaleString("en-US") + " Minutes";
         let daysDivisor = 1;
@@ -300,35 +277,27 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
              daysDivisor = (Date.now()/1000 - fromTimestamp) / 86400;
         }
         daysDivisor = Math.max(1, Math.round(daysDivisor));
-
         const dailyAvg = Math.round(totalMinutes / daysDivisor);
         const formattedDaily = dailyAvg.toLocaleString("en-US") + " Mins/Day";
-
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.textContent = formattedDaily;
         if (elements.userScrobbles) elements.userScrobbles.textContent = formattedTotal;
         if (elements.storyScrobblesValue) elements.storyScrobblesValue.textContent = formattedTotal;
         if (elements.sqScrobblesValue) elements.sqScrobblesValue.textContent = formattedTotal;
-
         const sortedArtists = Object.entries(artistMap)
             .map(([name, seconds]) => ({ name: name, seconds: seconds }))
             .sort((a, b) => b.seconds - a.seconds);
-
         const sortedTracks = Object.values(trackMap)
             .map(obj => ({ name: obj.name, artist: { name: obj.artist }, seconds: obj.seconds }))
             .sort((a, b) => b.seconds - a.seconds);
-
         const sortedAlbums = Object.values(albumMap) 
             .map(obj => ({ name: obj.name, artist: { name: obj.artist }, seconds: obj.seconds }))
             .sort((a, b) => b.seconds - a.seconds);
-
         cachedData.artists = sortedArtists;
         cachedData.tracks = sortedTracks;
         cachedData.albums = sortedAlbums;
-
         renderizarPreviewLista("cardArtists", sortedArtists, "artist");
         renderizarPreviewLista("cardTracks", sortedTracks, "track");
         renderizarPreviewLista("cardAlbums", sortedAlbums, "album");
-
         if (sortedArtists.length > 0) {
             const topArtistName = sortedArtists[0].name;
             buscarImagemSpotify(topArtistName, "", "artist").then((url) => {
@@ -365,7 +334,6 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
                 }
             });
         }
-        
         if (sortedAlbums.length > 0) {
             const topAlbum = sortedAlbums[0];
             buscarImagemSpotify(topAlbum.artist.name, topAlbum.name, "album").then((url) => {
@@ -381,7 +349,6 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
                 }
             });
         }
-
 } catch (error) {
         console.error("Erro calculando tempo:", error);
         if (elements.userScrobbles) elements.userScrobbles.textContent = "Error";
@@ -389,7 +356,6 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
     } finally {
         if (elements.userScrobbles) elements.userScrobbles.classList.remove("skeleton");
         if (elements.scrobblesPerDay) elements.scrobblesPerDay.classList.remove("skeleton");
-
         stopLoadingPhrases(finalLabelText || "Period Review");
     }
 }
@@ -397,7 +363,6 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
 function tratarEstadoVazio(periodName) {
     if (elements.chartsGrid) elements.chartsGrid.style.display = "none";
     if (elements.genReportBtn) elements.genReportBtn.style.display = "none";
-
     if (elements.mainTitle) {
         elements.mainTitle.textContent = "Oops, nothing here yet.";
         elements.mainTitle.style.opacity = "0.7";
@@ -406,10 +371,8 @@ function tratarEstadoVazio(periodName) {
         elements.monthlyLabel.textContent = `You haven't listened to anything ${periodName} yet. Come back later!`;
         elements.monthlyLabel.style.color = "#bb86fc";
     }
-
     if (elements.userScrobbles) { elements.userScrobbles.textContent = "0 Minutes"; elements.userScrobbles.classList.remove("skeleton"); }
     if (elements.scrobblesPerDay) { elements.scrobblesPerDay.textContent = "0 Mins/Day"; elements.scrobblesPerDay.classList.remove("skeleton"); }
-    
     atualizarBanner("");
 }
 
@@ -419,21 +382,16 @@ async function buscarHistoricoCompleto(fromTimestamp, toTimestamp = 0) {
     let totalPages = 1;
     const limit = 200; 
     const toParam = toTimestamp > 0 ? `&to=${toTimestamp}` : "";
-
     try {
         do {
             const url = CONFIG.counterUrl(`?method=user.getrecenttracks&user=${username}&limit=${limit}&page=${page}&from=${fromTimestamp}${toParam}&_t=${Date.now()}`);
             const res = await fetch(url);
             const data = await res.json();
-
             if (!data.recenttracks || !data.recenttracks.track) break;
-
             const tracks = Array.isArray(data.recenttracks.track) 
                 ? data.recenttracks.track 
                 : [data.recenttracks.track];
-            
             allTracks = allTracks.concat(tracks.filter(t => t.date)); 
-
             if (data.recenttracks["@attr"]) {
                 totalPages = parseInt(data.recenttracks["@attr"].totalPages);
             }
@@ -473,13 +431,10 @@ async function obterTokenSpotify() {
 async function buscarImagemSpotify(artist, albumOrTrackName, type) {
     const token = await obterTokenSpotify();
     if (!token) return null;
-
     const cleanArtist = artist.replace(/"/g, ''); 
     const cleanTrack = albumOrTrackName ? albumOrTrackName.split(" - ")[0].split("(")[0].trim() : "";
-
     let searchQuery = "";
     let searchType = "";
-
     if (type === "artist") {
         searchQuery = `artist:${cleanArtist}`;
         searchType = "artist";
@@ -490,7 +445,6 @@ async function buscarImagemSpotify(artist, albumOrTrackName, type) {
         searchQuery = `track:${cleanTrack} artist:${cleanArtist}`;
         searchType = "track";
     }
-
     try {
         const qEncoded = encodeURIComponent(searchQuery);
         const url = `https://api.spotify.com/v1/search?q=${qEncoded}&type=${searchType}&limit=1`;
@@ -499,14 +453,11 @@ async function buscarImagemSpotify(artist, albumOrTrackName, type) {
                 "Authorization": `Bearer ${token}` 
             }
         });
-
         if (!res.ok) {
             console.warn(`Erro Spotify [${res.status}]:`, await res.text());
             return null;
         }
-
         const data = await res.json();
-
         if (type === "artist" && data.artists?.items?.length > 0) {
             return data.artists.items[0].images[0]?.url;
         } else if (type === "album" && data.albums?.items?.length > 0) {
@@ -551,9 +502,7 @@ function renderizarPreviewLista(elementId, dataList, type) {
     const mainItems = dataList.slice(0, 10);
     const container = document.querySelector(`#${elementId} .lista-top`);
     if (!container) return;
-    
     let htmlMain = "";
-    
     mainItems.forEach((item, i) => {
         const isTop1 = i === 0;
         let text = item.name;
@@ -562,9 +511,7 @@ function renderizarPreviewLista(elementId, dataList, type) {
         if (type === "track" || type === "album") {
             subtext = `<span style="opacity:0.6"> - ${item.artist.name}</span>`;
         }
-        
         const imgId = `img-${type}-${i}`;
-        
         if (isTop1) {
             htmlMain += `
             <div class="chart-item top-1">
@@ -587,7 +534,6 @@ function renderizarPreviewLista(elementId, dataList, type) {
             </div>`;
         }
     });
-    
     container.innerHTML = htmlMain || "No data.";
 }
 
@@ -767,17 +713,13 @@ function formatarListaHTML(items, limit, type, format) {
     let html = "";
     const list = items || [];
     const itemsToShow = list.slice(0, limit);
-
     itemsToShow.forEach((item, i) => {
         let text = item.name;
-        
         if (format === "story") {
             const isTop1 = i === 0;
             const rankClass = isTop1 ? "top-1" : "";
-
             let timeStr = formatTimeShort(item.seconds); 
             timeStr = timeStr.replace('m', '') + ' mins'; 
-
             html += `
                 <div class="story-item ${rankClass}">
                     <span class="story-rank">${i + 1}</span>
@@ -804,17 +746,14 @@ function aplicarCoresDinamicas(card, accentColor, format) {
         card.querySelectorAll(".story-subtitle, .story-username, .footer-stat-label, .story-rank").forEach(
             (el) => (el.style.color = accentColor)
         );
-        
         card.querySelectorAll(".story-column h3").forEach(
             (el) => (el.style.borderLeftColor = accentColor)
         );
-
         const separator = card.querySelector(".story-separator");
         if (separator) {
             separator.style.backgroundColor = accentColor;
             separator.style.boxShadow = `0 0 20px ${accentColor}99`; 
         }
-
         const headerElement = card.querySelector(".story-header");
         if (headerElement) {
             if (globalTopArtistImage) {
@@ -823,7 +762,6 @@ function aplicarCoresDinamicas(card, accentColor, format) {
                     url('${globalTopArtistImage}')
                 `;
             } else {
-
                 headerElement.style.background = `radial-gradient(circle at center, ${accentColor}44, #0f0f0f)`;
             }
         }
@@ -868,14 +806,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function startLoadingPhrases() {
     if (!elements.monthlyLabel) return;
-    
     let phraseIndex = 0;
     elements.monthlyLabel.classList.add("loading-text-anim");
-    
     elements.monthlyLabel.textContent = loadingPhrases[0];
-
     if (loadingInterval) clearInterval(loadingInterval);
-
     loadingInterval = setInterval(() => {
         phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
         elements.monthlyLabel.textContent = loadingPhrases[phraseIndex];

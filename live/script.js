@@ -25,6 +25,7 @@ const elements = {
     toggleBlur: document.getElementById("toggle-blur"),
     blurControlRow: document.getElementById("blur-control-row"),
 };
+
 let params = new URLSearchParams(window.location.search);
 let username = params.get("user");
 let lastTrackSignature = "";
@@ -43,6 +44,7 @@ async function init() {
     await checkNowPlaying();
     setInterval(checkNowPlaying, POLL_INTERVAL);
 }
+
 async function init() {
     if (!username) {
         window.location.href = "index.html";
@@ -56,27 +58,28 @@ async function init() {
     await checkNowPlaying();
     setInterval(checkNowPlaying, POLL_INTERVAL);
 }
+
 function showTooltip() {
     const controls = document.getElementById("live-controls");
-    
     setTimeout(() => {
         elements.userTag.classList.add("visible");
         elements.userTag.classList.add("show-tooltip");
         if(controls) controls.classList.add("visible");
     }, 1000);
-
     setTimeout(() => {
         elements.userTag.classList.remove("show-tooltip");
         elements.userTag.classList.remove("visible");
         if(controls) controls.classList.remove("visible");
     }, 8000);
 }
+
 function setupControls() {
     const fullscreenBtn = document.getElementById("fullscreen-btn");
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener("click", toggleFullScreen);
     }
 }
+
 function toggleFullScreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(err => {
@@ -88,6 +91,7 @@ function toggleFullScreen() {
         }
     }
 }
+
 function setupMenuEvents() {
     elements.menuTrigger.addEventListener("click", () => {
         elements.menu.classList.add("active");
@@ -123,6 +127,7 @@ function setupMenuEvents() {
         });
     });
 }
+
 function updateOptionButtons() {
     elements.layoutBtns.forEach((btn) => {
         btn.classList.toggle("active", btn.getAttribute("data-layout") === currentSettings.layout);
@@ -136,11 +141,13 @@ function updateOptionButtons() {
         elements.blurControlRow.style.display = "flex";
     }
 }
+
 function saveSetting(key, value) {
     currentSettings[key] = value;
     localStorage.setItem("tunecharts_live_settings", JSON.stringify(currentSettings));
     applySettingsToUI();
 }
+
 function applySettingsToUI() {
     elements.playerContainer.className = `player-container ${currentSettings.layout}`;
     elements.trackName.classList.toggle("hidden-element", !currentSettings.showTrack);
@@ -154,6 +161,7 @@ function applySettingsToUI() {
         document.body.classList.remove("bg-mode-solid");
     }
 }
+
 async function checkNowPlaying() {
     try {
         const url = `${LASTFM_API_BASE}user.getrecenttracks&user=${username}&limit=1&_t=${Date.now()}`;
@@ -181,6 +189,7 @@ async function checkNowPlaying() {
         console.error("Last.fm error:", error);
     }
 }
+
 async function updateUI(track) {
     currentTrackData = track;
     updateText(elements.trackName, track.name);
@@ -191,12 +200,14 @@ async function updateUI(track) {
     updateAlbumArt(albumUrl);
     updateBackgroundImage(albumUrl);
 }
+
 function forceBackgroundUpdate() {
     if (!currentTrackData) return;
     const albumUrl =
         currentSpotifyImages.album || currentTrackData.image.find((i) => i.size === "extralarge")?.["#text"];
     updateBackgroundImage(albumUrl);
 }
+
 function updateAlbumArt(url) {
     if (url && url !== elements.albumArt.src) {
         const imgLoader = new Image();
@@ -217,6 +228,7 @@ function updateAlbumArt(url) {
         hideAlbumArt();
     }
 }
+
 function updateBackgroundImage(albumUrl) {
     let targetUrl = null;
     if (currentSettings.bgMode === "artist") targetUrl = currentSpotifyImages.artist || albumUrl;
@@ -229,6 +241,7 @@ function updateBackgroundImage(albumUrl) {
         };
     }
 }
+
 function extractAndApplyColor() {
     try {
         const img = elements.albumArt;
@@ -256,6 +269,7 @@ function extractAndApplyColor() {
         elements.solidBgLayer.style.backgroundColor = "#111";
     }
 }
+
 function setIdleState() {
     const msgs = ["Silence is golden...", "Waiting for music...", "Nothing playing right now."];
     updateText(elements.trackName, msgs[Math.floor(Math.random() * msgs.length)]);
@@ -265,6 +279,7 @@ function setIdleState() {
     elements.bgLayer.style.backgroundImage = "none";
     elements.solidBgLayer.style.backgroundColor = "#0f0f0f";
 }
+
 function hideAlbumArt() {
     if (elements.albumArt.classList.contains("visible")) {
         elements.albumArt.classList.remove("visible");
@@ -277,6 +292,7 @@ function hideAlbumArt() {
         elements.artPlaceholder.style.display = "flex";
     }
 }
+
 function updateText(element, newText) {
     if (element.textContent === newText) return;
     element.classList.add("fade-text", "fade-out");
@@ -287,6 +303,7 @@ function updateText(element, newText) {
         setTimeout(() => element.classList.remove("fade-in"), 500);
     }, 500);
 }
+
 async function obterTokenSpotify() {
     if (spotifyTokenCache) return spotifyTokenCache;
     try {
@@ -302,6 +319,7 @@ async function obterTokenSpotify() {
     }
     return null;
 }
+
 async function buscarImagensSpotify(artist, trackName) {
     const token = await obterTokenSpotify();
     if (!token) return { artist: null, album: null };
@@ -322,6 +340,7 @@ async function buscarImagensSpotify(artist, trackName) {
     }
     return result;
 }
+
 async function buscarInfoUsuario() {
     try {
         const url = `${LASTFM_API_BASE}user.getinfo&user=${username}`;
@@ -339,4 +358,5 @@ async function buscarInfoUsuario() {
         elements.userTag.style.display = "none";
     }
 }
+
 document.addEventListener("DOMContentLoaded", init);

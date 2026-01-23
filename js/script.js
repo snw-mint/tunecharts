@@ -17,9 +17,11 @@ function irParaPerfil() {
     }
     window.location.href = "result.html?user=" + usuario;
 }
+
 if (botaoIr) {
     botaoIr.addEventListener("click", irParaPerfil);
 }
+
 if (inputUsuario) {
     inputUsuario.addEventListener("keypress", function (evento) {
         if (evento.key === "Enter") {
@@ -27,9 +29,11 @@ if (inputUsuario) {
         }
     });
 }
+
 if (document.getElementById("currentYear")) {
     document.getElementById("currentYear").textContent = new Date().getFullYear();
 }
+
 const menuBtn = document.querySelector(".mobile-menu-btn");
 const navOverlay = document.querySelector(".mobile-nav-overlay");
 const mobileLinks = document.querySelectorAll(".mobile-link");

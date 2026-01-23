@@ -28,7 +28,6 @@
     font-weight: 800;
     src: url('../assets/fonts/outfit-800.woff2') format("woff2");
 }
-
 * {
     margin: 0;
     padding: 0;
@@ -325,7 +324,6 @@ html {
         font-size: 24px;
     }
 }
-
 main {
     flex: 1;
     display: flex;

@@ -50,7 +50,6 @@
     <meta content="Turn any screen into a beautiful music display." property="twitter:description" />
     <meta content="https://auvlyfm.github.io/live/assets/images/og-image.jpg" property="twitter:image" />
 </head>
-
 <body id="page-top">
     <header class="home-header">
         <a href="index.html" class="logo-container">
@@ -67,12 +66,10 @@
             <a href="#" class="nav-link active">Live <span class="badge-new">NEW</span></a>
         </nav>
     </header>
-
     <main class="hero-section">
         <div class="card-inicial">
             <h1>Last.fm Scrobbling Now Display</h1>
             <p>Transform your monitor into a dynamic "Now Playing" frame. Perfect for second screens or idle mode.</p>
-            
             <div class="input-group">
                 <div class="input-with-prefix">
                       <span class="prefix">
@@ -89,13 +86,11 @@
                     </svg>
                 </button>
             </div>
-
             <p class="signup-link">
                 Don't have a Last.fm account?
                 <a href="https://www.last.fm/join" target="_blank" rel="noopener noreferrer">Create one!</a>
             </p>
             <p class="erro" id="mensagemErro"></p>
-
             <div class="github-ribbon-container">
                 <a href="https://github.com/AuvlyFM/auvlyfm.github.io" target="_blank" class="github-ribbon" title="Source Code">
                     <svg viewBox="0 0 24 24" fill="currentColor">
@@ -105,7 +100,6 @@
             </div>
         </div>
     </main>
-
     <div class="content-wrapper">
         <section class="content-section image-left">
             <div class="content-image">
@@ -117,7 +111,6 @@
                 <p>It updates automatically as the song changes. Ideal for keeping your screen alive while you work, study, or relax.</p>
             </div>
         </section>
-
         <section class="content-section image-right">
             <div class="content-image">
                 <img alt="Customizable Display Options" src="assets/images/mockup-setup.webp" loading="lazy" />
@@ -134,7 +127,6 @@
             </div>
         </section>
     </div>
-
         <footer>
             <div class="footer-info">
                 <span class="info-line-1">© <span id="currentYear"></span> AuvlyFM.</span>
@@ -162,7 +154,6 @@
                     <path d="M12 6v12m0-12-5 5m5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-
         <script src="../js/version.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -170,9 +161,7 @@
             const botaoIr = document.getElementById("btnIr");
             const msgErro = document.getElementById("mensagemErro");
             const currentYear = document.getElementById("currentYear");
-
             if (currentYear) currentYear.textContent = new Date().getFullYear();
-
             const menuBtn = document.querySelector(".mobile-menu-btn");
             const navOverlay = document.querySelector(".mobile-nav-overlay");
             if (menuBtn && navOverlay) {
@@ -181,7 +170,6 @@
                     navOverlay.classList.toggle("active");
                 });
             }
-
             function irParaLive() {
                 const usuario = inputUsuario.value.trim();
                 if (usuario === "") {
@@ -189,7 +177,6 @@
                     return;
                 }
                 msgErro.textContent = "";
-
                 if (typeof gtag === "function") {
                     gtag("event", "start_live", {
                         event_category: "Live",
@@ -199,7 +186,6 @@
                 }
                 window.location.href = "live.html?user=" + encodeURIComponent(usuario);
             }
-
             if (botaoIr) botaoIr.addEventListener("click", irParaLive);
             if (inputUsuario) {
                 inputUsuario.addEventListener("keypress", (e) => {
