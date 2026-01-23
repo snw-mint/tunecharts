@@ -99,6 +99,23 @@
 .mobile-menu-btn.active .hamburger-line:nth-child(2) {
     opacity: 0;
 }
+.cta-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 100px;
+    width: auto;
+    text-decoration: none;
+    background-color: #bb86fc;
+    color: #000;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+.cta-button:hover {
+    background-color: #a370f7;
+    transform: scale(1.05);
+}
 .mobile-menu-btn.active .hamburger-line:nth-child(3) {
     transform: rotate(-45deg) translate(5px, -6px);
     background-color: #bb86fc;

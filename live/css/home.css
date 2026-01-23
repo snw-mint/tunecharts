@@ -344,7 +344,7 @@ button:hover {
 .cta-button {
     display: inline-block;
     margin-top: 20px;
-    padding: 15px 30px;
+    padding: 15px 100px;
     width: auto;
     text-decoration: none;
     background-color: #bb86fc;
