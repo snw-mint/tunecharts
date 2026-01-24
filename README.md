@@ -44,7 +44,6 @@ auvly-fm/
 Click to expand and see what each tool can do.
 
 <details> <summary> <strong>1. 🎵 AuvlyFM (Main) </strong> </summary>
-<img src="assets/images/og-image.jpg" width="30" align="center"
 
 A visualization tool designed to generate Last.fm charts based on your scrobble history.
 
