@@ -78,6 +78,12 @@ function configurarTogglePeriodo() {
       clickedButton.classList.add("active");
       currentPeriod = clickedButton.getAttribute("data-period");
       moveGlider(clickedButton);
+      if (typeof gtag === "function") {
+          gtag("event", "change_period", {
+              event_category: "Navigation",
+              period_selected: currentPeriod
+          });
+      }
       atualizarDadosDoPeriodo(false);
     });
   });
@@ -508,6 +514,7 @@ function configurarNavegacao() {
   if (prevBtn) {
     prevBtn.addEventListener("click", () => {
       periodOffset++;
+      if (typeof gtag === "function") gtag("event", "browse_history", { direction: "past" });
       atualizarDadosDoPeriodo(false);
     });
   }
@@ -515,6 +522,7 @@ function configurarNavegacao() {
     nextBtn.addEventListener("click", () => {
       if (periodOffset > 0) {
         periodOffset--;
+        if (typeof gtag === "function") gtag("event", "browse_history", { direction: "future" });
         atualizarDadosDoPeriodo(false);
       }
     });
@@ -587,6 +595,16 @@ async function gerarImagemFinal(format, accentColor, selectedCharts) {
     const link = document.createElement("a");
     link.download = `AuvlyFM-${username}-${currentPeriod}-${format}.png`;
     link.href = canvas.toDataURL("image/png");
+    if (typeof gtag === "function") {
+        gtag("event", "download_report", {
+            event_category: "Engagement",
+            event_label: "Charts Download",
+            file_format: format,
+            color_theme: accentColor,
+            period: currentPeriod,
+            charts_included: selectedCharts.join(",") 
+        });
+    }
     link.click();
     btn.innerHTML = `${iconCheck} Done!`;
     btn.style.backgroundColor = "#28a745";

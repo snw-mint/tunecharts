@@ -1,6 +1,6 @@
 const packageJsonUrl = `package.json?t=${new Date().getTime()}`;
 document.addEventListener("DOMContentLoaded", () => {
-    const APP_VERSION = "v5.1.0"; 
+    const APP_VERSION = "v5.2.0"; 
     const versionElements = document.querySelectorAll(".versao, #versao");
     versionElements.forEach(element => {
         element.textContent = APP_VERSION;

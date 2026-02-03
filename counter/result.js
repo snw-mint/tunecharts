@@ -80,6 +80,12 @@ function configurarTogglePeriodo() {
             clickedButton.classList.add("active");
             currentPeriod = clickedButton.getAttribute("data-period");
             moveGlider(clickedButton);
+            if (typeof gtag === "function") {
+                gtag("event", "change_period", {
+                    event_category: "Navigation",
+                    period_selected: currentPeriod
+                });
+            }
             atualizarDadosDoPeriodo(false);
         });
     });
@@ -99,6 +105,7 @@ function configurarNavegacao() {
     if (prevBtn) {
         prevBtn.addEventListener("click", () => {
             periodOffset++;
+            if (typeof gtag === "function") gtag("event", "browse_history", { direction: "past" });
             atualizarDadosDoPeriodo(false);
         });
     }
@@ -106,6 +113,7 @@ function configurarNavegacao() {
         nextBtn.addEventListener("click", () => {
             if (periodOffset > 0) {
                 periodOffset--;
+                if (typeof gtag === "function") gtag("event", "browse_history", { direction: "future" });
                 atualizarDadosDoPeriodo(false);
             }
         });
@@ -269,6 +277,14 @@ async function processarDadosTempoCalendario(fromTimestamp, toTimestamp, periodN
             }
         });
         const totalMinutes = Math.floor(totalSeconds / 60);
+        if (typeof gtag === "function") {
+            gtag("event", "calculate_time", {
+                event_category: "Engagement",
+                event_label: "Time Calculated",
+                minutes_tracked: totalMinutes, 
+                period_viewed: currentPeriod
+            });
+        }
         const formattedTotal = totalMinutes.toLocaleString("en-US") + " Minutes";
         let daysDivisor = 1;
         if (toTimestamp > 0) {
@@ -696,6 +712,15 @@ async function gerarImagemFinal(format, accentColor, selectedCharts) {
         const link = document.createElement("a");
         link.download = `AuvlyFM-${username}-${currentPeriod}-${format}.png`;
         link.href = canvas.toDataURL("image/png");
+        if (typeof gtag === "function") {
+            gtag("event", "share_time_card", {
+                event_category: "Engagement",
+                event_label: "Counter Download",
+                card_format: format,      // 'story' ou 'square'
+                color_theme: accentColor, // Ex: '#bb86fc'
+                period: currentPeriod
+            });
+        }
         link.click();
         btn.textContent = "Done!";
     } catch (err) {

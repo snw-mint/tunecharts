@@ -27,6 +27,19 @@ async function init() {
         const matchResult = calculateCompatibility(u1Artists, u2Artists);
         renderLists(matchResult, u1Artists, u2Artists);
         updateScoreUI(matchResult.score);
+        let tierName = "Stranger Vibes";
+        const s = matchResult.score;
+        if (s > 30) tierName = "Musical Acquaintances";
+        if (s > 50) tierName = "Vibe Buddies";
+        if (s > 70) tierName = "Sonic Soulmates";
+        if (s > 90) tierName = "A Perfect Match!";
+        if (typeof gtag === "function") {
+            gtag("event", "match_calculated", {
+                event_category: "Engagement",
+                score_value: s,      // Ex: 85
+                match_tier: tierName // Ex: 'Sonic Soulmates'
+            });
+        }
         loadImages(matchResult.commonArtists, u1Artists, u2Artists);
     } catch (error) {
         console.error("Erro crítico:", error);
@@ -356,6 +369,14 @@ async function generateFinalImage() {
         const link = document.createElement("a");
         link.download = `AuvlyFM-${user1}-vs-${user2}-${selectedFormat}.png`;
         link.href = canvas.toDataURL("image/png");
+        if (typeof gtag === "function") {
+            gtag("event", "share_match_card", {
+                event_category: "Engagement",
+                event_label: "Match Download",
+                card_format: selectedFormat,  
+                color_theme: selectedAccentColor
+            });
+        }
         link.click();
         btn.innerHTML = `${iconCheck} Saved!`;
         btn.style.backgroundColor = "#28a745";

@@ -85,9 +85,21 @@ function toggleFullScreen() {
         document.documentElement.requestFullscreen().catch(err => {
             console.warn(`Error attempting to enable fullscreen: ${err.message}`);
         });
+    if (typeof gtag === "function") {
+            gtag("event", "fullscreen_toggle", {
+                event_category: "Engagement",
+                state: "enter"
+            });
+        }
     } else {
         if (document.exitFullscreen) {
             document.exitFullscreen();
+        }
+        if (typeof gtag === "function") {
+            gtag("event", "fullscreen_toggle", {
+                event_category: "Engagement",
+                state: "exit"
+            });
         }
     }
 }
@@ -145,6 +157,13 @@ function updateOptionButtons() {
 function saveSetting(key, value) {
     currentSettings[key] = value;
     localStorage.setItem("tunecharts_live_settings", JSON.stringify(currentSettings));
+    if (typeof gtag === "function") {
+        gtag("event", "live_setting_change", {
+            event_category: "Interaction",
+            setting_name: key,
+            setting_value: value.toString() 
+        });
+    }
     applySettingsToUI();
 }
 

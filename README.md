@@ -101,6 +101,14 @@ API Keys: API Keys used in frontend JavaScript are publicly visible by design.
 
 - Be mindful of API rate limits.
 
+## 🛡️ Privacy & Analytics
+
+This project integrates **Google Analytics 4 (GA4)** to track anonymous usage statistics (e.g., popular report formats, screen resolution, and error rates).
+
+- **For Users:** No personal data (such as Last.fm session keys or passwords) is stored or sent to Google. We only track interaction events to improve the tools. See our [Privacy Policy](https://auvlyfm.github.io/privacy.html).
+
+- **For Developers/Forks:** The GA tracking script is included in the HTML files. **If you fork this repository, please remove or replace the Google Analytics script tag** in the `<head>` of all HTML files. Failing to do so will send your development/testing data to the official AuvlyFM analytics dashboard.
+
 ## 🚀 Deployment & Workflow
 
 This project utilizes a direct-to-production workflow tailored for Hostinger:
